@@ -1,0 +1,3 @@
+#!/bin/sh
+
+PERL5LIB=$PWD/lib:$PERL5LIB ./bin/app.pl daemon --listen http://*:$PORT --mode production
