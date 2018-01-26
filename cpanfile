@@ -7,3 +7,4 @@ requires 'Digest::MD5';
 requires 'Class::Method::Modifiers';
 requires 'DBIx::Class::InflateColumn::Boolean';
 requires 'DBD::Pg';
+requires 'Mojolicous';
