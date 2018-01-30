@@ -18,8 +18,11 @@ sub startup {
 
   # Route commands through the application
   my $r = $self->routes;
-  $r->any([qw/GET HEAD/] => '/sequence/:id')->to(controller => 'seq', action => 'id');
+  $r->get('/sequence/:id')->to(controller => 'seq', action => 'id');
   $r->get('/metadata/:id')->to(controller => 'metadata', action => 'id');
+
+  # New content type of FASTA
+  $self->types->type(fasta => 'text/x-fasta');
 }
 
 1;

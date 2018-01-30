@@ -37,7 +37,7 @@ sub generate_db_args {
       die "Unsupported URL scheme ".$url->protocol();
     }
 
-    push(@dbargs, $dbi_string) if $user;
+    push(@dbargs, $dbi_string);
 		push(@dbargs, $user) if $user;
     push(@dbargs, $pass) if $pass;
   }
@@ -52,8 +52,6 @@ sub generate_db_args {
   else {
     die "Please set the URI via one of the mechanisms"
   }
-
-  use Data::Dumper; warn Dumper \@dbargs;
 
   return @dbargs;
 }

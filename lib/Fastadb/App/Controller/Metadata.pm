@@ -5,7 +5,12 @@ use Mojo::Base 'Mojolicious::Controller';
 sub id {
   my ($self) = @_;
   my $id = $self->param('id');
-  my $seq = $self->db()->resultset('Seq')->get_seq_obj($id);
+  my $seq = $self->db()->resultset('Seq')->get_seq($id);
+
+  if(!$seq) {
+    return $self->render(text => 'Not Found', status => 404);
+  }
+
   my @aliases = (
     { alias => $seq->md5(), },
     { alias => $seq->sha1(), },

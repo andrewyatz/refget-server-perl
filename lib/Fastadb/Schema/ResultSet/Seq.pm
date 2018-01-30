@@ -26,7 +26,7 @@ sub create_seq {
   return $molecule_obj;
 }
 
-sub get_seq_obj {
+sub get_seq {
   my ($self, $id, $checksum_algorithm) = @_;
   $checksum_algorithm //= $self->detect_algorithm($id);
   return undef unless $self->allowed_algorithm($checksum_algorithm);
@@ -36,21 +36,6 @@ sub get_seq_obj {
   {
     prefetch => 'molecules'
   });
-}
-
-sub get_seq {
-  my ($self, $id, $start, $end, $checksum_algorithm) = @_;
-  my $seq_obj = $self->get_seq_obj($id, $checksum_algorithm);
-  return undef if ! defined $seq_obj;
-  my $seq = $seq_obj->seq();
-  if(defined $start && $end) {
-    my $length = $end - $start;
-    $seq = substr($seq, $start, $length);
-  }
-  elsif(defined $start) {
-    $seq = substr($seq, $start);
-  }
-  return $seq;
 }
 
 sub detect_algorithm {

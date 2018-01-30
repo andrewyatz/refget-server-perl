@@ -7,14 +7,22 @@ sub id {
   my $id = $self->param('id');
   my $start = $self->param('start');
   my $end = $self->param('end');
-  my $seq = $self->db()->resultset('Seq')->get_seq($id, $start, $end);
-  if($self->tx->req->method eq 'HEAD') {
-    $self->app->log->debug('In a head request');
-    # How do we find something
-    return $self->render(text => q{});
+
+  if($self->req->headers->range() || ($start && $end && $start > $end)) {
+    return $self->render(text => 'Range Not Satisfiable', status => 416);
   }
+
+  my $seq = $self->db()->resultset('Seq')->get_seq($id);
+  if(!$seq) {
+    return $self->render(text => 'Not Found', status => 404);
+  }
+  if($start && $start > $seq->size()) {
+    return $self->render(text => 'Invalid Range', status => 400);
+  }
+
   $self->respond_to(
-    txt => { data => $seq },
+    txt => { data => $seq->get_seq($start, $end) },
+    fasta => { data => $seq->to_fasta($start, $end) },
     any => { data => 'Unsupported Media Type', status => 415 }
   );
 }

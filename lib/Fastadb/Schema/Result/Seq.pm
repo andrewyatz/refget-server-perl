@@ -89,4 +89,30 @@ around seq => sub {
 	$self->$orig(@_);
 };
 
+sub default_checksum {
+	my ($self) = @_;
+	return $self->sha1();
+}
+
+sub get_seq {
+	my ($self, $start, $end) = @_;
+	my $seq = $self->seq();
+	if(defined $start && $end) {
+		my $length = $end - $start;
+		$seq = substr($seq, $start, $length);
+	}elsif(defined $start) {
+		$seq = substr($seq, $start);
+	}
+	return $seq;
+}
+
+sub to_fasta {
+	my ($self, $start, $end, $residues_per_line) = @_;
+	$residues_per_line //= 60;
+	my $seq = $self->get_seq($start, $end);
+	$seq =~ s/(\w{$residues_per_line})/$1\n/g;
+	my $id = $self->default_checksum();
+	return ">${id}\n${seq}";
+}
+
 1;

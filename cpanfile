@@ -8,3 +8,7 @@ requires 'Class::Method::Modifiers';
 requires 'DBIx::Class::InflateColumn::Boolean';
 requires 'DBD::Pg';
 requires 'Mojo';
+
+on 'test' => sub {
+  requires 'Test::DBIx::Class';
+};
