@@ -38,7 +38,7 @@ sub startup {
   });
   $r->options('/' => sub {
     my $c = shift;
-    $c->render(text => "OPTIONS");
+    $c->render(text => q{});
   });
 
   # Things that go to a controller
@@ -55,11 +55,18 @@ sub cors {
   $self->hook(
     before_dispatch => sub {
       my $c = shift;
-      if($c->req->headers->header('Origin')) {
-        $c->res->headers->header( 'Access-Control-Allow-Origin' => $c->req->headers->header('Origin') );
-        $c->res->headers->header( 'Access-Control-Allow-Methods' => 'GET, OPTIONS' );
-        $c->res->headers->header( 'Access-Control-Max-Age' => 2592000 );
-        $c->res->headers->header( 'Access-Control-Allow-Headers' => 'Content-Type, Authorization, X-Requested-With' );
+      my $req_headers = $c->req->headers();
+      if($req_headers->header('Origin')) {
+        my $rep_headers = $c->res->headers();
+        $rep_headers->header('Access-Control-Allow-Origin' => $req_headers->header('Origin') );
+        $rep_headers->header('Access-Control-Allow-Methods' => 'GET, OPTIONS');
+        $rep_headers->header('Access-Control-Max-Age' => 2592000);
+        $rep_headers->header('Access-Control-Allow-Headers' => 'Content-Type, Authorization, X-Requested-With');
+
+        # Response as detailed in https://fetch.spec.whatwg.org/#http-access-control-allow-credentials when
+        # request with OPTIONS comes in
+        my $credentials = $c->req->method() eq 'OPTIONS' ? 'omit' : 'true';
+        $rep_headers->header('Access-Control-Allow-Credentials' => $credentials);
       }
     }
   );
