@@ -7,9 +7,9 @@ use base qw/DBIx::Class::ResultSet/;
 use Digest::SHA qw(sha1_hex);
 
 sub create_seq {
-  my ($self, $seq_hash, $seq_type_obj, $release_obj) = @_;
+  my ($self, $seq_hash, $molecule_type_obj, $release_obj) = @_;
   my $hash = sha1_hex($seq_hash->{sequence});
-  my $seq_obj = $self->find_or_new({seq => $seq_hash->{sequence}, sha1 => $hash, seq_type => $seq_type_obj},{key => 'seq_sha1_uniq'});
+  my $seq_obj = $self->find_or_new({seq => $seq_hash->{sequence}, sha1 => $hash},{key => 'seq_sha1_uniq'});
   my $first_seen = 0;
   if(!$seq_obj->in_storage()) {
     $first_seen = 1;
@@ -18,9 +18,10 @@ sub create_seq {
   my $molecule_obj = $seq_obj->find_or_create_related(
     'molecules',
     {
-      stable_id => $seq_hash->{id},
+      id => $seq_hash->{id},
       first_seen => $first_seen,
       release => $release_obj,
+      mol_type => $molecule_type_obj
     }
   );
   return $molecule_obj;

@@ -22,12 +22,6 @@ __PACKAGE__->add_columns(
 		data_type => 'text',
 		is_nullable => 0,
 	},
-	seq_type_id =>{
-		data_type => 'integer',
-		size      => 16,
-		is_nullable => 0,
-		is_numeric => 1,
-	},
 	md5  =>{
 		data_type => 'char',
 		size      => 32,
@@ -58,7 +52,6 @@ __PACKAGE__->add_unique_constraint(
 __PACKAGE__->set_primary_key('seq_id');
 
 __PACKAGE__->has_many(molecules => 'Fastadb::Schema::Result::Molecule', 'seq_id');
-__PACKAGE__->belongs_to(seq_type => 'Fastadb::Schema::Result::SeqType', 'seq_type_id');
 
 sub sqlt_deploy_hook {
 	my ($self, $sqlt_table) = @_;

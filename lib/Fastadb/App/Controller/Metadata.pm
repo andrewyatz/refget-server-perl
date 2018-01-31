@@ -18,7 +18,7 @@ sub id {
   );
   my $molecules = $seq->molecules();
   foreach my $m ($molecules->next()) {
-    push(@aliases, { alias => $m->stable_id });
+    push(@aliases, { alias => $m->id });
   }
   $self->respond_to(
     json => { json => {

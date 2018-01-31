@@ -4,7 +4,7 @@ use namespace::autoclean;
 
 has 'id' => (isa => 'Str', is => 'rw', clearer => 'clear_id');
 has 'additional' => (isa => 'Str', is => 'rw', clearer => 'clear_additional', default => q{});
-has 'seq_type' => (isa => 'Str', is => 'ro', required => 1);
+has 'type' => (isa => 'Str', is => 'ro', required => 1);
 
 with 'Fastadb::Fmt::IO';
 
@@ -49,7 +49,7 @@ around 'iterate' => sub {
 
   # If ID was set then return
   if($id) {
-    return { id => $id, sequence => $sequence, additional => $additional, seq_type => $self->seq_type() };
+    return { id => $id, sequence => $sequence, additional => $additional, type => $self->type() };
   }
 
   # Otherwise end iteration

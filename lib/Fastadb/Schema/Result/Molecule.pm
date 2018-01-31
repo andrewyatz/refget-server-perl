@@ -28,7 +28,7 @@ __PACKAGE__->add_columns(
 		is_nullable => 0,
 		is_numeric => 1,
   },
-	stable_id =>{
+	id =>{
 		data_type => 'varchar',
     size => 128,
 		is_nullable => 0,
@@ -39,6 +39,12 @@ __PACKAGE__->add_columns(
 		false_is    => ['0','-1'],
 		is_nullable => 0,
 	},
+	mol_type_id =>{
+		data_type => 'integer',
+		size      => 16,
+		is_nullable => 0,
+		is_numeric => 1,
+	},
 	version =>{
 		data_type => 'integer',
 		size      => 4,
@@ -48,12 +54,13 @@ __PACKAGE__->add_columns(
 );
 
 __PACKAGE__->add_unique_constraint(
-  molecule_uniq => [qw/stable_id/]
+  molecule_uniq => [qw/id mol_type_id/]
 );
 
 __PACKAGE__->set_primary_key('molecule_id');
 
 __PACKAGE__->belongs_to(seq => 'Fastadb::Schema::Result::Seq', 'seq_id');
 __PACKAGE__->belongs_to(release => 'Fastadb::Schema::Result::Release', 'release_id');
+__PACKAGE__->belongs_to(mol_type => 'Fastadb::Schema::Result::MolType', 'mol_type_id');
 
 1;

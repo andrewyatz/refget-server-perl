@@ -14,19 +14,19 @@ has 'release'   => ( isa => 'Int', is => 'ro', required => 1 );
 sub run {
   my ($self) = @_;
   my $fasta = $self->fasta();
-  my ($species, $division, $release, $seq_type);
+  my ($species, $division, $release, $mol_type);
 
   $self->schema->txn_do(sub {
     $species = $self->schema->resultset('Species')->create_entry($self->species());
     $division = $self->schema->resultset('Division')->create_entry($self->division());
     $release = $self->schema->resultset('Release')->create_entry($self->release(), $division, $species);
-    $seq_type = $self->schema->resultset('SeqType')->create_entry($self->fasta()->seq_type());
+    $mol_type = $self->schema->resultset('MolType')->create_entry($self->fasta()->type());
   });
 
   my $rs = $self->schema->resultset('Seq');
   while(my $seq = $fasta->iterate()) {
     $self->schema->txn_do(sub {
-      $rs->create_seq($seq, $seq_type, $release);
+      $rs->create_seq($seq, $mol_type, $release);
     });
   }
   return;

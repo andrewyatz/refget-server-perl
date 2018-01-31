@@ -1,4 +1,4 @@
-package Fastadb::Schema::ResultSet::SeqType;
+package Fastadb::Schema::ResultSet::MolType;
 
 use strict;
 use warnings;
@@ -7,12 +7,12 @@ use base qw/Fastadb::Schema::Abstract::Dict/;
 
 sub type {
 	my ($self) = @_;
-	return 'seq_type';
+	return 'type';
 }
 
 sub key {
 	my ($self) = @_;
-	return 'seq_type_uniq';
+	return 'mol_type_uniq';
 }
 
 1;

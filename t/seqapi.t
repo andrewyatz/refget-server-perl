@@ -5,16 +5,16 @@ use warnings;
 
 use Test::DBIx::Class {
   schema_class => 'Fastadb::Schema',
-  resultsets => [ qw/Seq SeqType Release Molecule Division Species/ ],
+  resultsets => [ qw/Seq MolType Release Molecule Division Species/ ],
 };
 use Test::Mojo;
 
 isa_ok Schema, 'Fastadb::Schema'=> 'Got Correct Schema';
 isa_ok ResultSet('Seq'), 'Fastadb::Schema::ResultSet::Seq'=> 'Got the right Seq';
 
-my ($type, $division, $species, $release);
+my ($mol_type, $division, $species, $release);
 fixtures_ok sub {
-	$type = SeqType->create({seq_type => 'protein'});
+	$mol_type = MolType->create({type => 'protein'});
 	$division = Division->create({division => 'ensembl'});
 	$species = Species->create({species => 'yeast'});
 	$release = Release->create({release => 91, species => $species, division => $division});
@@ -27,7 +27,6 @@ fixtures_ok sub {
     sha1 => '2db01e3048c926193f525e295662a901b274a461',
     sha256 => '118fc0d17e5eee7e0b98f770844fade5a717e8a78d86cf8b1f81a13ffdbd269b',
     size => 61,
-    seq_type => $type,
   });
   my $seq2 = Seq->create({
     seq => 'MSSPTPPGGQRTLQKRKQGSSQKVAASAPKKNTNSNNSILKIYSDEATGLRVDPLVVLFLAVGFIFSVVALHVISKVAGKLF',
@@ -35,20 +34,21 @@ fixtures_ok sub {
     sha1 => 'f5c6270cf86632900e741d865794f18a4ce98c8d',
     sha256 => '22e3e2203700e0b0879ed8b350febc086de4420b6e843d17e8d5e3a11461ae0f',
     size => 82,
-    seq_type => $type,
   });
 
   Molecule->create({
-    stable_id => 'YHR055C',
+    id => 'YHR055C',
     first_seen => 1,
     seq => $seq,
     release => $release,
+    mol_type => $mol_type,
   });
   Molecule->create({
-    stable_id => 'YER087C-B',
+    id => 'YER087C-B',
     first_seen => 1,
     seq => $seq2,
     release => $release,
+    mol_type => $mol_type,
   });
 },'Installed fixtures';
 
@@ -114,9 +114,10 @@ $t->get_ok('/sequence/bogus' => { Accept => 'text/plain'})
   ->content_is('Not Found');
 
 my $stable_id = 'YER087C-B';
-my $mol = Molecule->find({ stable_id => $stable_id});
+my $mol = Molecule->find({ id => $stable_id});
 $t->get_ok('/metadata/'.$mol->seq->sha1 => { Accept => 'application/json'})
 	->status_is(200)
+  ->or(sub { diag explain $t->tx->res })
   ->json_is({
     metadata => {
       id => $mol->seq->sha1,

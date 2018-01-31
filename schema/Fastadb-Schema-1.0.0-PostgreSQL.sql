@@ -1,6 +1,6 @@
 -- 
 -- Created by SQL::Translator::Producer::PostgreSQL
--- Created on Fri Jan 26 16:13:19 2018
+-- Created on Wed Jan 31 10:23:55 2018
 -- 
 --
 -- Table: division
@@ -14,15 +14,32 @@ CREATE TABLE division (
 );
 
 --
--- Table: seq_type
+-- Table: mol_type
 --
-DROP TABLE seq_type CASCADE;
-CREATE TABLE seq_type (
-  seq_type_id bigserial NOT NULL,
-  seq_type character varying(256) NOT NULL,
-  PRIMARY KEY (seq_type_id),
-  CONSTRAINT seq_type_uniq UNIQUE (seq_type)
+DROP TABLE mol_type CASCADE;
+CREATE TABLE mol_type (
+  mol_type_id bigserial NOT NULL,
+  type character varying(256) NOT NULL,
+  PRIMARY KEY (mol_type_id),
+  CONSTRAINT mol_type_uniq UNIQUE (type)
 );
+
+--
+-- Table: seq
+--
+DROP TABLE seq CASCADE;
+CREATE TABLE seq (
+  seq_id bigserial NOT NULL,
+  seq text NOT NULL,
+  md5 character(32) NOT NULL,
+  sha1 character(40) NOT NULL,
+  sha256 character(64) NOT NULL,
+  size bigint NOT NULL,
+  PRIMARY KEY (seq_id),
+  CONSTRAINT seq_sha1_uniq UNIQUE (sha1)
+);
+CREATE INDEX md5_idx on seq (md5);
+CREATE INDEX sha256_idx on seq (sha256);
 
 --
 -- Table: species
@@ -34,25 +51,6 @@ CREATE TABLE species (
   PRIMARY KEY (species_id),
   CONSTRAINT species_uniq UNIQUE (species)
 );
-
---
--- Table: seq
---
-DROP TABLE seq CASCADE;
-CREATE TABLE seq (
-  seq_id bigserial NOT NULL,
-  seq text NOT NULL,
-  seq_type_id bigint NOT NULL,
-  md5 character(32) NOT NULL,
-  sha1 character(40) NOT NULL,
-  sha256 character(64) NOT NULL,
-  size bigint NOT NULL,
-  PRIMARY KEY (seq_id),
-  CONSTRAINT seq_sha1_uniq UNIQUE (sha1)
-);
-CREATE INDEX seq_idx_seq_type_id on seq (seq_type_id);
-CREATE INDEX md5_idx on seq (md5);
-CREATE INDEX sha256_idx on seq (sha256);
 
 --
 -- Table: release
@@ -77,12 +75,14 @@ CREATE TABLE molecule (
   molecule_id bigserial NOT NULL,
   seq_id bigint NOT NULL,
   release_id bigint NOT NULL,
-  stable_id character varying(128) NOT NULL,
+  id character varying(128) NOT NULL,
   first_seen integer NOT NULL,
+  mol_type_id bigint NOT NULL,
   version smallint,
   PRIMARY KEY (molecule_id),
-  CONSTRAINT molecule_uniq UNIQUE (stable_id)
+  CONSTRAINT molecule_uniq UNIQUE (id, mol_type_id)
 );
+CREATE INDEX molecule_idx_mol_type_id on molecule (mol_type_id);
 CREATE INDEX molecule_idx_release_id on molecule (release_id);
 CREATE INDEX molecule_idx_seq_id on molecule (seq_id);
 
@@ -90,14 +90,14 @@ CREATE INDEX molecule_idx_seq_id on molecule (seq_id);
 -- Foreign Key Definitions
 --
 
-ALTER TABLE seq ADD CONSTRAINT seq_fk_seq_type_id FOREIGN KEY (seq_type_id)
-  REFERENCES seq_type (seq_type_id) ON DELETE CASCADE ON UPDATE CASCADE DEFERRABLE;
-
 ALTER TABLE release ADD CONSTRAINT release_fk_division_id FOREIGN KEY (division_id)
   REFERENCES division (division_id) ON DELETE CASCADE ON UPDATE CASCADE DEFERRABLE;
 
 ALTER TABLE release ADD CONSTRAINT release_fk_species_id FOREIGN KEY (species_id)
   REFERENCES species (species_id) ON DELETE CASCADE ON UPDATE CASCADE DEFERRABLE;
+
+ALTER TABLE molecule ADD CONSTRAINT molecule_fk_mol_type_id FOREIGN KEY (mol_type_id)
+  REFERENCES mol_type (mol_type_id) ON DELETE CASCADE ON UPDATE CASCADE DEFERRABLE;
 
 ALTER TABLE molecule ADD CONSTRAINT molecule_fk_release_id FOREIGN KEY (release_id)
   REFERENCES release (release_id) ON DELETE CASCADE ON UPDATE CASCADE DEFERRABLE;
