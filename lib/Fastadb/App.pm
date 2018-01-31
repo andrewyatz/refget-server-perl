@@ -34,6 +34,7 @@ sub startup {
   });
   $r->get('/sequence/:id')->to(controller => 'seq', action => 'id');
   $r->get('/metadata/:id')->to(controller => 'metadata', action => 'id');
+  $r->post('/batch/sequence')->to(controller => 'batchseq', action => 'batch');
 
   # New content type of FASTA
   $self->types->type(fasta => 'text/x-fasta');

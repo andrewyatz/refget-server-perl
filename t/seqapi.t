@@ -109,9 +109,36 @@ $t->head_ok($basic_url => { Accept => 'text/plain'})
   ->content_type_is('text/plain;charset=UTF-8')
   ->header_is('Content-Length', '61');
 
-$t->get_ok('/sequence/bogus' => { Accept => 'text/plain'})
+# Bogus sequence
+$t->get_ok('/sequence/bogus' => { Accept => 'text/plain' })
   ->status_is(404)
   ->content_is('Not Found');
+
+# Batch retrieval
+$t->post_ok('/batch/sequence'
+  => { Accept => 'application/json' }
+  => form => {
+    id => ['2db01e3048c926193f525e295662a901b274a461', 'c8e76de5f86131da26e8dd163658290d', 'bogus']
+  })
+  ->status_is(200)
+  ->json_is([
+    {
+      id => '2db01e3048c926193f525e295662a901b274a461',
+      seq => 'MFSELINFQNEGHECQCQCGSCKNNEQCQKSCSCPTGCNSDDKCPCGNKSEETKKSCCSGK',
+      sha1 => '2db01e3048c926193f525e295662a901b274a461',
+      found => 1,
+    },
+    {
+      id => 'c8e76de5f86131da26e8dd163658290d',
+      seq => 'MSSPTPPGGQRTLQKRKQGSSQKVAASAPKKNTNSNNSILKIYSDEATGLRVDPLVVLFLAVGFIFSVVALHVISKVAGKLF',
+      sha1 => 'f5c6270cf86632900e741d865794f18a4ce98c8d',
+      found => 1,
+    },
+    {
+      id => 'bogus',
+      found => 0
+    },
+  ]);
 
 my $stable_id = 'YER087C-B';
 my $mol = Molecule->find({ id => $stable_id});
