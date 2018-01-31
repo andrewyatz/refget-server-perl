@@ -56,7 +56,7 @@ sub cors {
     before_dispatch => sub {
       my $c = shift;
       if($c->req->headers->header('Origin')) {
-        $c->res->headers->header( 'Access-Control-Allow-Origin' => '*' );
+        $c->res->headers->header( 'Access-Control-Allow-Origin' => $c->req->headers->header('Origin') );
         $c->res->headers->header( 'Access-Control-Allow-Methods' => 'GET, OPTIONS' );
         $c->res->headers->header( 'Access-Control-Max-Age' => 2592000 );
         $c->res->headers->header( 'Access-Control-Allow-Headers' => 'Content-Type, Authorization, X-Requested-With' );
