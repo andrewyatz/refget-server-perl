@@ -1,4 +1,5 @@
 .vstags
-/*.db
+/*.db*
 /*.fa
 /*.fa.gz
+.vscode/settings.json
