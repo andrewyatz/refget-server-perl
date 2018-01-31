@@ -36,7 +36,7 @@ sub startup {
     my $c = shift;
     $c->render(text => "Ping");
   });
-  $r->options('/options' => sub {
+  $r->options('/' => sub {
     my $c = shift;
     $c->render(text => "OPTIONS");
   });
