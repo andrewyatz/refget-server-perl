@@ -1,5 +1,9 @@
 # Decision Log
 
+## 2018-02-01 - Support range
+
+Simple range support brought in as per the specification
+
 ## 2018-02-01 - CORS. Remove credentials
 
 We have no credentials so we have removed the header
