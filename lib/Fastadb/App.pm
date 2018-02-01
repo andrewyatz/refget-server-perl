@@ -58,10 +58,17 @@ sub cors {
       my $req_headers = $c->req->headers();
       if($req_headers->header('Origin')) {
         my $rep_headers = $c->res->headers();
+        # If we have this we are in a pre-flight according to https://www.html5rocks.com/static/images/cors_server_flowchart.png
+        if($c->req->method eq 'OPTIONS' && $rep_headers->header('Access-Control-Request-Method')) {
+          $rep_headers->header('Access-Control-Allow-Methods' => 'GET, OPTIONS');
+          $rep_headers->header('Access-Control-Max-Age' => 2592000);
+          $rep_headers->header('Access-Control-Allow-Headers' => 'Content-Type, Authorization, X-Requested-With');
+        }
+        else {
+          $rep_headers->header('Access-Control-Expose-Headers' => 'Cache-Control, Content-Language, Content-Type, Expires, Last-Modified, Pragma');
+        }
+
         $rep_headers->header('Access-Control-Allow-Origin' => $req_headers->header('Origin') );
-        $rep_headers->header('Access-Control-Allow-Methods' => 'GET, OPTIONS');
-        $rep_headers->header('Access-Control-Max-Age' => 2592000);
-        $rep_headers->header('Access-Control-Allow-Headers' => 'Content-Type, Authorization, X-Requested-With');
       }
     }
   );
