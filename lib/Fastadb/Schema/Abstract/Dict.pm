@@ -27,6 +27,12 @@ sub create_entries {
 	return \@ret;
 }
 
+sub find_entry {
+	my ($self, $value) = @_;
+	my $obj = $self->find({$self->type() => $value}, {key => $self->key()});
+	return $obj;
+}
+
 sub create_entry {
 	my ($self, $value) = @_;
 	my $obj = $self->find_or_create({$self->type() => $value}, {key => $self->key()});

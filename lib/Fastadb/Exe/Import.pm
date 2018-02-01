@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use Moose;
+use Carp qw/confess/;
 
 has 'schema'    => ( isa => 'Fastadb::Schema', is => 'ro', required => 1 );
 has 'fasta'     => ( isa => 'Fastadb::Fmt::Fasta', is => 'ro', required => 1 );
@@ -20,8 +21,11 @@ sub run {
     $species = $self->schema->resultset('Species')->create_entry($self->species());
     $division = $self->schema->resultset('Division')->create_entry($self->division());
     $release = $self->schema->resultset('Release')->create_entry($self->release(), $division, $species);
-    $mol_type = $self->schema->resultset('MolType')->create_entry($self->fasta()->type());
+    $mol_type = $self->schema->resultset('MolType')->find_entry($self->fasta()->type());
   });
+  if(! defined $mol_type) {
+    confess('No molecule_type in the database found for '.$self->fasta()->type());
+  }
 
   my $rs = $self->schema->resultset('Seq');
   while(my $seq = $fasta->iterate()) {
