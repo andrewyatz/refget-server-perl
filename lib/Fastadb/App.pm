@@ -32,13 +32,14 @@ sub startup {
   my $r = $self->routes;
 
   #Routes that just work inline
+  #  $r->options('/*' => sub {
+  #   my $c = shift;
+  #   $c->render(text => q{});
+  # });
+
   $r->get('/ping' => {ping => ''} => sub {
     my $c = shift;
     $c->render(text => "Ping");
-  });
-  $r->options('/' => sub {
-    my $c = shift;
-    $c->render(text => q{});
   });
 
   # Things that go to a controller
@@ -52,23 +53,35 @@ sub startup {
 
 sub cors {
   my ($self) = @_;
+  #Sledgehammer; support CORS on all URL requests by intercepting everything, sniffing for OPTIONS and then
+  #choosing to move onto the next action or bailing out with a CORS response
   $self->hook(
-    before_dispatch => sub {
+    around_dispatch => sub {
+      my $next = shift;
       my $c = shift;
-      my $req_headers = $c->req->headers();
-      if($req_headers->header('Origin')) {
-        my $rep_headers = $c->res->headers();
+      my $req = $c->req->headers();
+      my $options_request = 0;
+      if($req->origin) {
+        my $resp = $c->res->headers();
         # If we have this we are in a pre-flight according to https://www.html5rocks.com/static/images/cors_server_flowchart.png
-        if($c->req->method eq 'OPTIONS' && $rep_headers->header('Access-Control-Request-Method')) {
-          $rep_headers->header('Access-Control-Allow-Methods' => 'GET, OPTIONS');
-          $rep_headers->header('Access-Control-Max-Age' => 2592000);
-          $rep_headers->header('Access-Control-Allow-Headers' => 'Content-Type, Authorization, X-Requested-With');
+        if($c->req->method eq 'OPTIONS' && $req->header('access-control-request-method')) {
+          $resp->header('Access-Control-Allow-Methods' => 'GET, OPTIONS');
+          $resp->header('Access-Control-Max-Age' => 2592000);
+          $resp->header('Access-Control-Allow-Headers' => 'Content-Type, Authorization, X-Requested-With');
+          $options_request = 1;
         }
         else {
-          $rep_headers->header('Access-Control-Expose-Headers' => 'Cache-Control, Content-Language, Content-Type, Expires, Last-Modified, Pragma');
+          $resp->header('Access-Control-Expose-Headers' => 'Cache-Control, Content-Language, Content-Type, Expires, Last-Modified, Pragma');
         }
 
-        $rep_headers->header('Access-Control-Allow-Origin' => $req_headers->header('Origin') );
+        $resp->header('Access-Control-Allow-Origin' => $req->header('Origin') );
+      }
+
+      if($options_request) {
+        $c->render(text => q{}, status => 200);
+      }
+      else {
+        $next->();
       }
     }
   );
