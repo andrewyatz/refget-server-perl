@@ -67,7 +67,7 @@ sub cors {
         if($c->req->method eq 'OPTIONS' && $req->header('access-control-request-method')) {
           $resp->header('Access-Control-Allow-Methods' => 'GET, OPTIONS');
           $resp->header('Access-Control-Max-Age' => 2592000);
-          $resp->header('Access-Control-Allow-Headers' => 'Content-Type, Authorization, X-Requested-With');
+          $resp->header('Access-Control-Allow-Headers' => 'Content-Type, Authorization, X-Requested-With, api_key, Range');
           $options_request = 1;
         }
         else {
