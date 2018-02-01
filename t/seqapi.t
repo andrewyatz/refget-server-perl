@@ -65,11 +65,18 @@ foreach my $m (qw/md5 sha1 sha256/) {
     ->content_is($raw_seq);
 }
 
-# Trying Range request because we do not support this
+# Trying Range requests
 my $basic_url = '/sequence/'.$md5;
-$t->get_ok($basic_url => { Accept => 'text/plain', Range => 'bytes=0-10'})
-  ->status_is(416)
-  ->content_is('Range Not Satisfiable');
+$t->get_ok($basic_url => { Accept => 'text/plain', Range => 'bytes=59-61'})
+  ->status_is(200)
+  ->content_is('SGK');
+$t->get_ok($basic_url => { Accept => 'text/plain', Range => 'bytes=59'})
+  ->status_is(400);
+$t->get_ok($basic_url => { Accept => 'text/plain', Range => 'bytes=1-bogus'})
+  ->status_is(400);
+$t->get_ok($basic_url.'?start=0&end=1' => { Accept => 'text/plain', Range => 'bytes=1-2'})
+  ->status_is(400)
+  ->content_is('Invalid Input');
 
 # Good substring request
 $t->get_ok("/sequence/${md5}?start=0&end=1" => { Accept => 'text/plain' })

@@ -8,7 +8,20 @@ sub id {
   my $start = $self->param('start');
   my $end = $self->param('end');
 
-  if($self->req->headers->range() || ($start && $end && $start > $end)) {
+  my $range = $self->req->headers->range;
+  if($range) {
+    if($start || $end) {
+      return $self->render(text => 'Invalid Input', status => 400);
+    }
+    if(($start,$end) = $range =~ /(\d+)-(\d+)/) {
+      $start--; # switch into ga4gh 0 based coords
+    }
+    else {
+      return $self->render(text => 'Invalid Input', status => 400);
+    }
+  }
+
+  if($start && $end && $start > $end) {
     return $self->render(text => 'Range Not Satisfiable', status => 416);
   }
 
