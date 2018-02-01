@@ -62,11 +62,6 @@ sub cors {
         $rep_headers->header('Access-Control-Allow-Methods' => 'GET, OPTIONS');
         $rep_headers->header('Access-Control-Max-Age' => 2592000);
         $rep_headers->header('Access-Control-Allow-Headers' => 'Content-Type, Authorization, X-Requested-With');
-
-        # Response as detailed in https://fetch.spec.whatwg.org/#http-access-control-allow-credentials when
-        # request with OPTIONS comes in
-        my $credentials = $c->req->method() eq 'OPTIONS' ? 'omit' : 'true';
-        $rep_headers->header('Access-Control-Allow-Credentials' => $credentials);
       }
     }
   );
