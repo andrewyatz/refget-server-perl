@@ -1,6 +1,6 @@
 -- 
 -- Created by SQL::Translator::Producer::SQLite
--- Created on Wed Jan 31 10:23:55 2018
+-- Created on Fri Feb  2 07:46:43 2018
 -- 
 
 BEGIN TRANSACTION;
@@ -56,10 +56,11 @@ DROP TABLE species;
 
 CREATE TABLE species (
   species_id INTEGER PRIMARY KEY NOT NULL,
-  species varchar(256) NOT NULL
+  species varchar(256) NOT NULL,
+  assembly varchar(256) NOT NULL
 );
 
-CREATE UNIQUE INDEX species_uniq ON species (species);
+CREATE UNIQUE INDEX species_uniq ON species (species, assembly);
 
 --
 -- Table: release

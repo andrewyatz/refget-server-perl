@@ -16,7 +16,7 @@ my ($mol_type, $division, $species, $release);
 fixtures_ok sub {
 	$mol_type = MolType->create({type => 'protein'});
 	$division = Division->create({division => 'ensembl'});
-	$species = Species->create({species => 'yeast'});
+	$species = Species->create({species => 'yeast', assembly => 'R64-1-1'});
 	$release = Release->create({release => 91, species => $species, division => $division});
 };
 

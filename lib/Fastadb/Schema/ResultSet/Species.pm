@@ -15,4 +15,10 @@ sub key {
 	return 'species_uniq';
 }
 
+sub create_entry {
+	my ($self, $species, $assembly) = @_;
+	my $obj = $self->find_or_create({$self->type() => $species, assembly => $assembly}, {key => $self->key()});
+	return $obj;
+}
+
 1;

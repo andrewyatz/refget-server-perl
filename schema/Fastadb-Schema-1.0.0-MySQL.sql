@@ -1,6 +1,6 @@
 -- 
 -- Created by SQL::Translator::Producer::MySQL
--- Created on Wed Jan 31 10:23:55 2018
+-- Created on Fri Feb  2 07:46:43 2018
 -- 
 SET foreign_key_checks=0;
 
@@ -54,8 +54,9 @@ DROP TABLE IF EXISTS species;
 CREATE TABLE species (
   species_id integer(16) NOT NULL auto_increment,
   species text NOT NULL,
+  assembly text NOT NULL,
   PRIMARY KEY (species_id),
-  UNIQUE species_uniq (species)
+  UNIQUE species_uniq (species, assembly)
 ) ENGINE=InnoDB;
 
 DROP TABLE IF EXISTS release;

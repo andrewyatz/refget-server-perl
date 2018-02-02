@@ -22,10 +22,15 @@ __PACKAGE__->add_columns(
 		size      => 256,
 		is_nullable => 0,
   },
+	assembly =>{
+		data_type => 'varchar',
+		size      => 256,
+		is_nullable => 0,
+  },
 );
 
 __PACKAGE__->add_unique_constraint(
-  species_uniq => [qw/species/]
+  species_uniq => [qw/species assembly/]
 );
 
 __PACKAGE__->set_primary_key('species_id');

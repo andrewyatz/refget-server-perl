@@ -1,6 +1,6 @@
 -- 
 -- Created by SQL::Translator::Producer::PostgreSQL
--- Created on Wed Jan 31 10:23:55 2018
+-- Created on Fri Feb  2 07:46:43 2018
 -- 
 --
 -- Table: division
@@ -48,8 +48,9 @@ DROP TABLE species CASCADE;
 CREATE TABLE species (
   species_id bigserial NOT NULL,
   species character varying(256) NOT NULL,
+  assembly character varying(256) NOT NULL,
   PRIMARY KEY (species_id),
-  CONSTRAINT species_uniq UNIQUE (species)
+  CONSTRAINT species_uniq UNIQUE (species, assembly)
 );
 
 --

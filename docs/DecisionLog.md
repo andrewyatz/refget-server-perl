@@ -1,5 +1,9 @@
 # Decision Log
 
+## 2018-02-02 - Add assembly to a species
+
+Add assembly to a species as the sequence arises from both species and assembly version not just the species
+
 ## 2018-02-01 - Support range
 
 Simple range support brought in as per the specification

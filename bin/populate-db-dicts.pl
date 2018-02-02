@@ -18,12 +18,13 @@ create('Division', 'division', [qw/
   fungi
 /]);
 
-# Populate seq types
-create('SeqType', 'seq_type', [qw/
+# Populate mol types
+create('MolType', 'mol_type', [qw/
   protein
   cds
   cdna
   ncrna
+  dna
 /]);
 
 sub create {

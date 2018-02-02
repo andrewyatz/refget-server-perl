@@ -11,6 +11,7 @@ has 'fasta'     => ( isa => 'Fastadb::Fmt::Fasta', is => 'ro', required => 1 );
 has 'species'   => ( isa => 'Str', is => 'ro', required => 1 );
 has 'division'  => ( isa => 'Str', is => 'ro', required => 1 );
 has 'release'   => ( isa => 'Int', is => 'ro', required => 1 );
+has 'assembly'  => ( isa => 'Str', is => 'ro', required => 1 );
 
 sub run {
   my ($self) = @_;
@@ -18,7 +19,7 @@ sub run {
   my ($species, $division, $release, $mol_type);
 
   $self->schema->txn_do(sub {
-    $species = $self->schema->resultset('Species')->create_entry($self->species());
+    $species = $self->schema->resultset('Species')->create_entry($self->species(), $self->assembly());
     $division = $self->schema->resultset('Division')->create_entry($self->division());
     $release = $self->schema->resultset('Release')->create_entry($self->release(), $division, $species);
     $mol_type = $self->schema->resultset('MolType')->find_entry($self->fasta()->type());
@@ -35,5 +36,7 @@ sub run {
   }
   return;
 }
+
+__PACKAGE__->meta->make_immutable;
 
 1;
