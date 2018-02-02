@@ -1,5 +1,9 @@
 # Decision Log
 
+## 2018-02-02 - Swagger Support
+
+Write up the current proposed specification as a swagger API definition. Provides documentation for downstream users
+
 ## 2018-02-02 - Add assembly to a species
 
 Add assembly to a species as the sequence arises from both species and assembly version not just the species
