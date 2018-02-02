@@ -23,6 +23,11 @@ sub startup {
     });
   }
 
+  if(exists $ENV{APP_LOG_FILE}) {
+    my $loglevel = $ENV{APP_LOG_LEVEL} || 'warn';
+    $self->log(Mojo::Log->new(path => $ENV{APP_LOG_FILE}, level => $loglevel ));
+  }
+
   $self->cors();
 
   # Install the schema helper
