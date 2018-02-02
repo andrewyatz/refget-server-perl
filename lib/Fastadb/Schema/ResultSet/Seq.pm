@@ -28,15 +28,18 @@ sub create_seq {
 }
 
 sub get_seq {
-  my ($self, $id, $checksum_algorithm) = @_;
+  my ($self, $id, $checksum_algorithm, $full_object) = @_;
   $checksum_algorithm //= $self->detect_algorithm($id);
   return undef unless $self->allowed_algorithm($checksum_algorithm);
+  my $options = {
+    prefetch => 'molecules'
+  };
+  $options->{columns} = [qw/seq_id md5 sha1 sha256 size/] if !$full_object;
+
   return $self->find({
     $checksum_algorithm => $id
   },
-  {
-    prefetch => 'molecules'
-  });
+  $options);
 }
 
 sub detect_algorithm {
