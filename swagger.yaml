@@ -1,0 +1,109 @@
+swagger: '2.0'
+info:
+  description: System for retrieving sequence and metadata concerning a reference sequence object by hash
+  version: '0.1'
+  title: GA4GH Reference Sequence Retrieval API
+
+host: seqapi.herokuapp.com
+schemes:
+ - https
+ - http
+
+paths:
+  /sequence/{id}:
+    get:
+      summary: Get a sequence from a hash
+      operationId: sequence
+      description: |
+        Retrieve a reference sequence using a cryptographic hash function such as sha1
+      produces:
+      - text/plain
+      tags:
+      - Sequence
+      parameters:
+      - in: path
+        name: id
+        description: The identifier to use. Should be a checksum hash
+        required: true
+        type: string
+        default: "c8e76de5f86131da26e8dd163658290d"
+      - in: query
+        name: start
+        description: Request a subsequence of the data (0-based)
+        type: integer
+        format: int32
+        minimum: 0
+      - in: query
+        name: end
+        description: Request a subsequence of the data by specifying the end
+        type: integer
+        format: int32
+        minimum: 1
+      - in : header
+        name: Range
+        required: false
+        description: "Specify a substring as a range not using query parameters. Note start is in Ensembl-style start coordinates i.e. the first base of a sequence is 1 not 0 as in the start parameter. Example is 'bytes: 1-10'"
+        type: string
+
+      responses:
+        200:
+          description: Successful retrieval of sequence. Returned as a single string with no line breaks
+          schema:
+            type: string
+            example: MSSPTPPGGQRTLQKRKQGSSQKVAASAPKKNTNSNNSILKIYSDEATGLRVDPLVVLFLAVGFIFSVVALHVISKVAGKLF
+        '400':
+          description: Invalid input; normally due to range parameter usage
+        '404':
+          description: Sequence was not found
+        '415':
+          description: The requested sequence formatting is not supported by the server
+        '416':
+          description: Invalid range request specified
+
+  /metadata/{id} :
+    get:
+      summary: Get reference metadta from a hash
+      description: Retrieve a reference metadata information using a cryptographic hash function such as sha1
+      produces:
+        - application/json
+      tags:
+        - Metadata
+      parameters:
+        - in: path
+          name: id
+          type: string
+          default: "c8e76de5f86131da26e8dd163658290d"
+          required: true
+          description: The identifier to use. Should be a checksum hash
+      responses:
+        '200':
+          description: Successful retrieval of sequence metadata
+          schema:
+            $ref: '#/definitions/Metadata'
+        '404':
+          description: Sequence hash was not found
+
+definitions:
+  Metadata:
+    type: object
+    properties:
+      id:
+        type: string
+        description: Query identifier
+        example: c8e76de5f86131da26e8dd163658290d
+      length:
+        type: integer
+        format: int64
+        description: An decimal integer of the length of the reference sequence
+      aliases:
+        type: array
+        items:
+          type: object
+          properties:
+            alias:
+              type: string
+              description: A known alias for the query
+    required:
+    - id
+    - length
+    - aliases
