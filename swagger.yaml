@@ -62,7 +62,7 @@ paths:
 
   /metadata/{id} :
     get:
-      summary: Get reference metadta from a hash
+      summary: Get reference metadata from a hash
       description: Retrieve a reference metadata information using a cryptographic hash function such as sha1
       produces:
         - application/json
