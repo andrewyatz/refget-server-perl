@@ -2,6 +2,8 @@ use Test::More;
 
 use strict;
 use warnings;
+use IO::Uncompress::Gunzip 'gunzip';
+use IO::Compress::Gzip 'gzip';
 
 use Test::DBIx::Class {
   schema_class => 'Fastadb::Schema',
@@ -59,6 +61,7 @@ $t->app->schema(Schema);
 my $md5 = 'b6517aa110cc10776af5c368c5342f95';
 my $seq_obj = Seq->get_seq($md5, 'md5');
 my $raw_seq = $seq_obj->seq();
+
 foreach my $m (qw/md5 sha1 sha256/) {
   $t->get_ok('/sequence/'.$seq_obj->$m() => { Accept => 'text/plain'})
     ->status_is(200)
@@ -120,6 +123,12 @@ $t->head_ok($basic_url => { Accept => 'text/plain'})
 $t->get_ok('/sequence/bogus' => { Accept => 'text/plain' })
   ->status_is(404)
   ->content_is('Not Found');
+
+#GZipped response
+gzip $raw_seq, \my $compressed_seq;
+$t->get_ok($basic_url => { Accept => 'text/plain', 'Accept-Encoding' => 'gzip'})
+  ->status_is(200)
+  ->content_is($raw_seq)->or(sub { warn $t->tx->res->content()->is_compressed()});
 
 # Batch retrieval
 $t->post_ok('/batch/sequence'

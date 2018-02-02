@@ -4,6 +4,7 @@ use Mojo::Base 'Mojolicious';
 
 use Mojo::URL;
 use Fastadb::Schema;
+use IO::Compress::Gzip 'gzip';
 
 # Connects once for entire application. For real apps, consider using a helper
 # that can reconnect on each request if necessary.
@@ -29,6 +30,7 @@ sub startup {
   }
 
   $self->cors();
+  # $self->accept_encoding();
 
   # Install the schema helper
   $self->helper(db => sub { $self->app()->schema() });
@@ -48,9 +50,9 @@ sub startup {
   });
 
   # Things that go to a controller
-  $r->get('/sequence/:id')->to(controller => 'seq', action => 'id');
-  $r->get('/metadata/:id')->to(controller => 'metadata', action => 'id');
-  $r->post('/batch/sequence')->to(controller => 'batchseq', action => 'batch');
+  $r->get('/sequence/:id')->to(controller => 'seq', action => 'id', gzip => 1);
+  $r->get('/metadata/:id')->to(controller => 'metadata', action => 'id', gzip => 1);
+  $r->post('/batch/sequence')->to(controller => 'batchseq', action => 'batch', gzip => 1);
 
   # New content type of FASTA
   $self->types->type(fasta => 'text/x-fasta');
@@ -60,37 +62,51 @@ sub cors {
   my ($self) = @_;
   #Sledgehammer; support CORS on all URL requests by intercepting everything, sniffing for OPTIONS and then
   #choosing to move onto the next action or bailing out with a CORS response
-  $self->hook(
-    around_dispatch => sub {
-      my $next = shift;
-      my $c = shift;
-      my $req = $c->req->headers();
-      my $options_request = 0;
-      if($req->origin) {
-        my $resp = $c->res->headers();
-        # If we have this we are in a pre-flight according to https://www.html5rocks.com/static/images/cors_server_flowchart.png
-        if($c->req->method eq 'OPTIONS' && $req->header('access-control-request-method')) {
-          $resp->header('Access-Control-Allow-Methods' => 'GET, OPTIONS');
-          $resp->header('Access-Control-Max-Age' => 2592000);
-          $resp->header('Access-Control-Allow-Headers' => 'Content-Type, Authorization, X-Requested-With, api_key, Range');
-          $options_request = 1;
-        }
-        else {
-          $resp->header('Access-Control-Expose-Headers' => 'Cache-Control, Content-Language, Content-Type, Expires, Last-Modified, Pragma');
-        }
-
-        $resp->header('Access-Control-Allow-Origin' => $req->header('Origin') );
-      }
-
-      if($options_request) {
-        $c->render(text => q{}, status => 200);
+  $self->hook( around_dispatch => sub {
+    my $next = shift;
+    my $c = shift;
+    my $req = $c->req->headers();
+    my $options_request = 0;
+    if($req->origin) {
+      my $resp = $c->res->headers();
+      # If we have this we are in a pre-flight according to https://www.html5rocks.com/static/images/cors_server_flowchart.png
+      if($c->req->method eq 'OPTIONS' && $req->header('access-control-request-method')) {
+        $resp->header('Access-Control-Allow-Methods' => 'GET, OPTIONS');
+        $resp->header('Access-Control-Max-Age' => 2592000);
+        $resp->header('Access-Control-Allow-Headers' => 'Content-Type, Authorization, X-Requested-With, api_key, Range');
+        $options_request = 1;
       }
       else {
-        $next->();
+        $resp->header('Access-Control-Expose-Headers' => 'Cache-Control, Content-Language, Content-Type, Expires, Last-Modified, Pragma');
       }
+
+      $resp->header('Access-Control-Allow-Origin' => $req->header('Origin') );
     }
-  );
+
+    if($options_request) {
+      $c->render(text => q{}, status => 200);
+    }
+    else {
+      $next->();
+    }
+  });
   return;
+}
+
+sub accept_encoding {
+  my ($self) = @_;
+  $self->hook(after_render => sub {
+    my ($c, $output, $format) = @_;
+    # Check if "gzip => 1" has been set in the stash
+    return unless $c->stash->{gzip};
+    # Check if user agent accepts gzip compression
+    return unless ($c->req->headers->accept_encoding // '') =~ /gzip/i;
+    $c->res->headers->append(Vary => 'Accept-Encoding');
+    # Compress content with gzip
+    $c->res->headers->content_encoding('gzip');
+    gzip $output, \my $compressed;
+    $$output = $compressed;
+  });
 }
 
 1;

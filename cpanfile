@@ -7,6 +7,8 @@ requires 'Digest::MD5';
 requires 'Class::Method::Modifiers';
 requires 'DBIx::Class::InflateColumn::Boolean';
 requires 'DBD::Pg';
+requires 'IO::Compress::Gzip';
+requires 'IO::Uncompress::Gunzip';
 
 # Mojo support
 requires 'Mojo';
