@@ -29,8 +29,9 @@ sub startup {
     $self->log(Mojo::Log->new(path => $ENV{APP_LOG_FILE}, level => $loglevel ));
   }
 
+  # TODO make these configurable somehow
   $self->cors();
-  # $self->accept_encoding();
+  $self->accept_encoding();
 
   # Install the schema helper
   $self->helper(db => sub { $self->app()->schema() });

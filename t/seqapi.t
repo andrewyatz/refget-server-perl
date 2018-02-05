@@ -58,6 +58,13 @@ fixtures_ok sub {
 my $t = Test::Mojo->new('Fastadb::App');
 $t->app->schema(Schema);
 
+# Disable GZipping content unless boolean says otherwise. Mojo does this automatically during requests
+my $disable_gzip_accept_encoding = 1;
+$t->ua->on(start => sub {
+  my ($ua, $tx) = @_;
+  $tx->req->headers->remove('Accept-Encoding') if $disable_gzip_accept_encoding;
+});
+
 my $md5 = 'b6517aa110cc10776af5c368c5342f95';
 my $seq_obj = Seq->get_seq($md5, 'md5');
 my $raw_seq = $seq_obj->seq();
@@ -124,11 +131,13 @@ $t->get_ok('/sequence/bogus' => { Accept => 'text/plain' })
   ->status_is(404)
   ->content_is('Not Found');
 
-#GZipped response
+#GZipped response testing
 gzip $raw_seq, \my $compressed_seq;
-$t->get_ok($basic_url => { Accept => 'text/plain', 'Accept-Encoding' => 'gzip'})
+$disable_gzip_accept_encoding = 0;
+$t->get_ok($basic_url => { Accept => 'text/plain' })
   ->status_is(200)
-  ->content_is($raw_seq)->or(sub { warn $t->tx->res->content()->is_compressed()});
+  ->content_is($raw_seq);
+$disable_gzip_accept_encoding = 1;
 
 # Batch retrieval
 $t->post_ok('/batch/sequence'
