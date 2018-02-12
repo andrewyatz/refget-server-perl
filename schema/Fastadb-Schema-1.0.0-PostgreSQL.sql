@@ -1,6 +1,6 @@
 -- 
 -- Created by SQL::Translator::Producer::PostgreSQL
--- Created on Fri Feb  2 07:46:43 2018
+-- Created on Mon Feb 12 17:59:55 2018
 -- 
 --
 -- Table: division
@@ -34,12 +34,14 @@ CREATE TABLE seq (
   md5 character(32) NOT NULL,
   sha1 character(40) NOT NULL,
   sha256 character(64) NOT NULL,
+  vmcdigest character(39) NOT NULL,
   size bigint NOT NULL,
   PRIMARY KEY (seq_id),
   CONSTRAINT seq_sha1_uniq UNIQUE (sha1)
 );
 CREATE INDEX md5_idx on seq (md5);
 CREATE INDEX sha256_idx on seq (sha256);
+CREATE INDEX vmcdigest_idx on seq (vmcdigest);
 
 --
 -- Table: species

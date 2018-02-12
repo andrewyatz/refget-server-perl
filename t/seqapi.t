@@ -26,6 +26,7 @@ fixtures_ok sub {
     md5 => 'b6517aa110cc10776af5c368c5342f95',
     sha1 => '2db01e3048c926193f525e295662a901b274a461',
     sha256 => '118fc0d17e5eee7e0b98f770844fade5a717e8a78d86cf8b1f81a13ffdbd269b',
+    vmcdigest => 'VMC:GS_DxwXEkpq24VDow6GvCGRyxoWvCkxpWuo',
     size => 61,
   });
   my $seq2 = Seq->create({
@@ -33,6 +34,7 @@ fixtures_ok sub {
     md5 => 'c8e76de5f86131da26e8dd163658290d',
     sha1 => 'f5c6270cf86632900e741d865794f18a4ce98c8d',
     sha256 => '22e3e2203700e0b0879ed8b350febc086de4420b6e843d17e8d5e3a11461ae0f',
+    vmcdigest => 'VMC:GS_PuY8Qw3zDRaaPHn4EVirz2YpWZxlXcbY',
     size => 82,
   });
 
@@ -59,7 +61,7 @@ $t->app->schema(Schema);
 my $md5 = 'b6517aa110cc10776af5c368c5342f95';
 my $seq_obj = Seq->get_seq($md5, 'md5');
 my $raw_seq = $seq_obj->seq();
-foreach my $m (qw/md5 sha1 sha256/) {
+foreach my $m (qw/md5 sha1 sha256 vmcdigest/) {
   $t->get_ok('/sequence/'.$seq_obj->$m() => { Accept => 'text/plain'})
     ->status_is(200)
     ->content_is($raw_seq);
@@ -157,9 +159,10 @@ $t->get_ok('/metadata/'.$mol->seq->sha1 => { Accept => 'application/json'})
       id => $mol->seq->sha1,
       length => 82,
       aliases => [
-        { alias => $mol->seq->md5},
+        { alias => $mol->seq->md5 },
         { alias => $mol->seq->sha1 },
         { alias => $mol->seq->sha256 },
+        { alias => $mol->seq->vmcdigest },
         { alias => $stable_id },
       ]
     }

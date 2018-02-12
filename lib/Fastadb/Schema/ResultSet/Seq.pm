@@ -43,13 +43,14 @@ sub detect_algorithm {
   my ($self, $key) = @_;
   my $length = length($key);
   my $checksum_column = ($length == 32) ? 'md5'
+                      : ($length == 39) ? 'vmcdigest'
                       : ($length == 40) ? 'sha1'
                       : ($length == 64) ? 'sha256'
                       : undef;
   return $checksum_column;
 }
 
-my %algorithms = map {$_ => 1} qw/md5 sha1 sha256/;
+my %algorithms = map {$_ => 1} qw/md5 sha1 sha256 vmcdigest/;
 sub allowed_algorithm {
   my ($self, $key) = @_;
   return 0 unless defined $key;

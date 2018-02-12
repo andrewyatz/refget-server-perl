@@ -1,6 +1,6 @@
 -- 
 -- Created by SQL::Translator::Producer::MySQL
--- Created on Fri Feb  2 07:46:43 2018
+-- Created on Mon Feb 12 17:59:55 2018
 -- 
 SET foreign_key_checks=0;
 
@@ -39,9 +39,11 @@ CREATE TABLE seq (
   md5 char(32) NOT NULL,
   sha1 char(40) NOT NULL,
   sha256 char(64) NOT NULL,
+  vmcdigest char(39) NOT NULL,
   size integer(11) NOT NULL,
   INDEX md5_idx (md5),
   INDEX sha256_idx (sha256),
+  INDEX vmcdigest_idx (vmcdigest),
   PRIMARY KEY (seq_id),
   UNIQUE seq_sha1_uniq (sha1)
 ) ENGINE=InnoDB;

@@ -7,6 +7,7 @@ use base 'DBIx::Class::Core';
 use Digest::MD5 qw/md5_hex/;
 use Digest::SHA qw/sha256_hex sha1_hex/;
 use Class::Method::Modifiers;
+use Fastadb::Util qw/vmc_digest/;
 
 __PACKAGE__->table('seq');
 
@@ -37,6 +38,11 @@ __PACKAGE__->add_columns(
 		size      => 64,
 		is_nullable => 0,
 	},
+	vmcdigest => {
+		data_type => 'char',
+		size      => 39,
+		is_nullable => 0,
+	},
   size =>{
     data_type => 'integer',
     size      => 11,
@@ -57,6 +63,7 @@ sub sqlt_deploy_hook {
 	my ($self, $sqlt_table) = @_;
 	$sqlt_table->add_index(name => 'md5_idx', fields => ['md5']);
 	$sqlt_table->add_index(name => 'sha256_idx', fields => ['sha256']);
+	$sqlt_table->add_index(name => 'vmcdigest_idx', fields => ['vmcdigest']);
 	return $sqlt_table;
 }
 
@@ -65,6 +72,7 @@ sub new {
 	$attrs->{sha1} = sha1_hex($attrs->{seq}) unless defined $attrs->{sha1};
 	$attrs->{md5} = md5_hex($attrs->{seq}) unless defined $attrs->{md5};
 	$attrs->{sha256} = sha256_hex($attrs->{seq}) unless defined $attrs->{sha256};
+	$attrs->{vmcdigest} = vmc_digest($attrs->{seq}) unless defined $attrs->{vmcdigest};
 	$attrs->{size} = length($attrs->{seq}) unless defined $attrs->{size};
 	my $new = $class->next::method($attrs);
 	return $new;
@@ -77,6 +85,7 @@ around seq => sub {
 		$self->md5(md5_hex($value));
 		$self->sha256(sha256_hex($value));
 		$self->sha1(sha1_hex($value));
+		$self->vmcdigest(vmc_digest($value));
 		$self->size(length($value));
 	}
 	$self->$orig(@_);

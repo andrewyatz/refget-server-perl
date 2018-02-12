@@ -1,6 +1,6 @@
 -- 
 -- Created by SQL::Translator::Producer::SQLite
--- Created on Fri Feb  2 07:46:43 2018
+-- Created on Mon Feb 12 17:59:55 2018
 -- 
 
 BEGIN TRANSACTION;
@@ -40,12 +40,15 @@ CREATE TABLE seq (
   md5 char(32) NOT NULL,
   sha1 char(40) NOT NULL,
   sha256 char(64) NOT NULL,
+  vmcdigest char(39) NOT NULL,
   size integer(11) NOT NULL
 );
 
 CREATE INDEX md5_idx ON seq (md5);
 
 CREATE INDEX sha256_idx ON seq (sha256);
+
+CREATE INDEX vmcdigest_idx ON seq (vmcdigest);
 
 CREATE UNIQUE INDEX seq_sha1_uniq ON seq (sha1);
 
