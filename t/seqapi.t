@@ -124,7 +124,15 @@ K");
 $t->head_ok($basic_url => { Accept => 'text/plain'})
   ->status_is(200)
   ->content_type_is('text/plain;charset=UTF-8')
-  ->header_is('Content-Length', '61');
+  ->header_is('Content-Length', '61', 'Content-Length is the same as sequence length');
+
+# Turn on Gzip and ensure we get content-length of the compressed content
+$disable_gzip_accept_encoding = 0;
+$t->head_ok($basic_url => { Accept => 'text/plain'})
+  ->status_is(200, 'Accept-Encoding does not affect URL success')
+  ->content_type_is('text/plain;charset=UTF-8', 'Content-Type remains text/plain with Accept-Encoding')
+  ->header_is('Content-Length', '69', 'Content-Length of Accept-Encoding is set to 69');
+$disable_gzip_accept_encoding = 1;
 
 # Bogus sequence
 $t->get_ok('/sequence/bogus' => { Accept => 'text/plain' })
