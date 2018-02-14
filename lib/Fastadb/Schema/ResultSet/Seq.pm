@@ -4,12 +4,12 @@ use strict;
 use warnings;
 
 use base qw/DBIx::Class::ResultSet/;
-use Digest::SHA qw(sha1_hex);
+use Digest::SHA qw(sha256_hex);
 
 sub create_seq {
   my ($self, $seq_hash, $molecule_type_obj, $release_obj) = @_;
-  my $hash = sha1_hex($seq_hash->{sequence});
-  my $seq_obj = $self->find_or_new({seq => $seq_hash->{sequence}, sha1 => $hash},{key => 'seq_sha1_uniq'});
+  my $hash = sha256_hex($seq_hash->{sequence});
+  my $seq_obj = $self->find_or_new({seq => $seq_hash->{sequence}, sha256 => $hash},{key => 'seq_sha256_uniq'});
   my $first_seen = 0;
   if(!$seq_obj->in_storage()) {
     $first_seen = 1;
@@ -46,15 +46,21 @@ sub detect_algorithm {
                       : ($length == 39) ? 'vmcdigest'
                       : ($length == 40) ? 'sha1'
                       : ($length == 64) ? 'sha256'
+                      : ($length == 128) ? 'sha512'
                       : undef;
   return $checksum_column;
 }
 
-my %algorithms = map {$_ => 1} qw/md5 sha1 sha256 vmcdigest/;
+my %algorithms = map {$_ => 1} qw/md5 sha1 sha256 vmcdigest sha512/;
 sub allowed_algorithm {
   my ($self, $key) = @_;
   return 0 unless defined $key;
   return exists $algorithms{$key};
+}
+
+sub available_alorithms {
+  my ($self) = @_;
+  return keys %algorithms;
 }
 
 1;

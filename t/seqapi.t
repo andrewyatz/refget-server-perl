@@ -108,7 +108,7 @@ $t->get_ok($basic_url => { Accept => 'text/html' })
 # FASTA now
 $t->get_ok($basic_url => { Accept => 'text/x-fasta' })
   ->status_is(200)
-  ->content_is(">2db01e3048c926193f525e295662a901b274a461
+  ->content_is(">118fc0d17e5eee7e0b98f770844fade5a717e8a78d86cf8b1f81a13ffdbd269b
 MFSELINFQNEGHECQCQCGSCKNNEQCQKSCSCPTGCNSDDKCPCGNKSEETKKSCCSG
 K");
 
