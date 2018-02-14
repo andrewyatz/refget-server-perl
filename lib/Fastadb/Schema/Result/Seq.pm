@@ -48,6 +48,13 @@ __PACKAGE__->add_columns(
     is_nullable => 0,
     is_numeric => 1,
   },
+  circular =>{
+		data_type   => 'integer',
+    is_boolean  => 1,
+		false_is    => ['0','-1'],
+		is_nullable => 0,
+		default_value => 0,
+	},
 );
 
 __PACKAGE__->add_unique_constraint(
@@ -73,6 +80,7 @@ sub new {
 	$attrs->{sha256} = sha256_hex($attrs->{seq}) unless defined $attrs->{sha256};
 	$attrs->{sha512} = sha512_hex($attrs->{seq}) unless defined $attrs->{sha512};
 	$attrs->{size} = length($attrs->{seq}) unless defined $attrs->{size};
+	$attrs->{circular} = 0 unless defined $attrs->{circular};
 	my $new = $class->next::method($attrs);
 	return $new;
 }
@@ -99,9 +107,22 @@ sub get_seq {
 	my ($self, $start, $end) = @_;
 	my $seq = $self->seq();
 	if(defined $start && $end) {
-		my $length = $end - $start;
-		$seq = substr($seq, $start, $length);
-	}elsif(defined $start) {
+
+		# We are in a circular sequence call
+		if($start > $end && $self->circular()) {
+			my $seq_size = $self->size();
+			my $subseq = substr($seq, $start, ($seq_size-$start));
+			$subseq .= substr($seq, 0, $end);
+			$seq = $subseq;
+		}
+		# Otherwise it is a normal call
+		else {
+			my $length = $end - $start;
+			$seq = substr($seq, $start, $length);
+		}
+	}
+	# Or we are requesting the start to the end
+	elsif(defined $start) {
 		$seq = substr($seq, $start);
 	}
 	return $seq;

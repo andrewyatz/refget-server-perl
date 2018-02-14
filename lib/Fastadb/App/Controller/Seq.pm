@@ -21,15 +21,18 @@ sub id {
     }
   }
 
-  if($start && $end && $start > $end) {
-    return $self->render(text => 'Range Not Satisfiable', status => 416);
-  }
-
   my $seq = $self->db()->resultset('Seq')->get_seq($id);
   if(!$seq) {
     return $self->render(text => 'Not Found', status => 404);
   }
+  # Only when we're handling circular sequences
+  if(!$seq->circular() && ($start && $end && $start > $end)) {
+    return $self->render(text => 'Range Not Satisfiable', status => 416);
+  }
   if($start && $start > $seq->size()) {
+    return $self->render(text => 'Invalid Range', status => 400);
+  }
+  if($end && $end > $seq->size()) {
     return $self->render(text => 'Invalid Range', status => 400);
   }
 

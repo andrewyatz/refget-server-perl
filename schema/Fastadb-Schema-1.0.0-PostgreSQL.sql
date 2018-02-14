@@ -1,6 +1,6 @@
 -- 
 -- Created by SQL::Translator::Producer::PostgreSQL
--- Created on Wed Feb 14 10:38:50 2018
+-- Created on Wed Feb 14 13:06:25 2018
 -- 
 --
 -- Table: division
@@ -36,6 +36,7 @@ CREATE TABLE seq (
   sha256 character(64) NOT NULL,
   sha512 character(128) NOT NULL,
   size bigint NOT NULL,
+  circular integer DEFAULT 0 NOT NULL,
   PRIMARY KEY (seq_id),
   CONSTRAINT seq_sha256_uniq UNIQUE (sha256)
 );

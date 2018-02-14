@@ -1,6 +1,6 @@
 -- 
 -- Created by SQL::Translator::Producer::SQLite
--- Created on Wed Feb 14 10:38:49 2018
+-- Created on Wed Feb 14 13:06:25 2018
 -- 
 
 BEGIN TRANSACTION;
@@ -41,7 +41,8 @@ CREATE TABLE seq (
   sha1 char(40) NOT NULL,
   sha256 char(64) NOT NULL,
   sha512 char(128) NOT NULL,
-  size integer(11) NOT NULL
+  size integer(11) NOT NULL,
+  circular integer NOT NULL DEFAULT 0
 );
 
 CREATE INDEX md5_idx ON seq (md5);
