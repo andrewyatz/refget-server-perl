@@ -22,7 +22,7 @@ RUN chmod +x $APP_DIR/bin/*.pl; \
     adduser -S -g mydocker mydocker ; \
     rm -f $APP_DIR/log/* $APP_DIR/tmp/*;
 
-RUN chown -R mydocker:mydocker /home/mydocker $APP_DIR/log $APP_DIR/tmp
+RUN chown -R mydocker:0 /home/mydocker $APP_DIR/log $APP_DIR/tmp
 
 USER mydocker
 EXPOSE 8080
