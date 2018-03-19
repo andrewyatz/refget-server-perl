@@ -3,3 +3,4 @@
 /*.fa
 /*.fa.gz
 .vscode/settings.json
+.env
