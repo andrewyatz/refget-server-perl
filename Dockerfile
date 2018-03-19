@@ -22,10 +22,12 @@ RUN chmod +x $APP_DIR/bin/*.pl; \
     adduser -S -g mydocker mydocker ; \
     rm -f $APP_DIR/log/* $APP_DIR/tmp/*;
 
-RUN chown -R mydocker:0 /home/mydocker $APP_DIR/log $APP_DIR/tmp
+RUN chgrp -R 0 /home/mydocker $APP_DIR/log $APP_DIR/tmp && \
+    chmod -R g=u /home/mydocker $APP_DIR/log $APP_DIR/tmp
 
 USER mydocker
 EXPOSE 8080
 WORKDIR $APP_DIR
 ENV APP_PID_FILE=${APP_DIR}/tmp/hypnotoad.pid
+# ENV APP_ACCESS_LOG_FILE=${APP_DIR}/log/access.log
 CMD ["hypnotoad", "-f", "/app/bin/app.pl"]

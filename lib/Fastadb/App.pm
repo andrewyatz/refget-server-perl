@@ -28,6 +28,11 @@ sub startup {
     $self->log(Mojo::Log->new(path => $ENV{APP_LOG_FILE}, level => $loglevel ));
   }
 
+  if(exists $ENV{APP_ACCESS_LOG_FILE}) {
+    my $logformat = $ENV{APP_ACCESS_LOG_FORMAT} || 'combinedio';
+    $self->plugin(AccessLog => log => $ENV{APP_ACCESS_LOG_FILE}, format => $logformat);
+  }
+
   $self->cors();
 
   # Install the schema helper

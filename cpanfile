@@ -14,6 +14,7 @@ requires "EV";
 requires 'IO::Socket::Socks';
 requires 'IO::Socket::SSL';
 #requires "Mojolicious::Plugin::JSON::XS";
+requires "Mojolicious::Plugin::AccessLog";
 requires "Mojo::IOLoop::ReadWriteFork";
 
 on 'test' => sub {
