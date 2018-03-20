@@ -25,17 +25,17 @@ sub id {
     return $self->render(text => 'Range Not Satisfiable', status => 416);
   }
 
-  my $seq = $self->db()->resultset('Seq')->get_seq($id);
-  if(!$seq) {
+  my $seq_obj = $self->db()->resultset('Seq')->get_seq($id);
+  if(!$seq_obj) {
     return $self->render(text => 'Not Found', status => 404);
   }
-  if($start && $start > $seq->size()) {
+  if($start && $start > $seq_obj->size()) {
     return $self->render(text => 'Invalid Range', status => 400);
   }
-
+  my $sub_seq = $self->db()->resultset('SubSeq');
   $self->respond_to(
-    txt => { data => $seq->get_seq($start, $end) },
-    fasta => { data => $seq->to_fasta($start, $end) },
+    txt => { data => $seq_obj->get_seq($sub_seq, $start, $end) },
+    fasta => { data => $seq_obj->to_fasta($sub_seq, $start, $end) },
     any => { data => 'Unsupported Media Type', status => 415 }
   );
 }

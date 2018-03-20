@@ -7,13 +7,14 @@ sub batch {
 	my $ids = $self->every_param('id');
 
   my @results;
+  my $subseq = $self->db()->resultset('SubSeq');
   foreach my $id (@{$ids}) {
     my $r = { id => $id, found => 0 };
     my $seq = $self->db()->resultset('Seq')->get_seq($id);
     if($seq) {
       $r->{found} = 1;
       $r->{sha1} = $seq->sha1();
-      $r->{seq} = $seq->get_seq();
+      $r->{seq} = $seq->get_seq($subseq);
     }
     push(@results, $r);
   }

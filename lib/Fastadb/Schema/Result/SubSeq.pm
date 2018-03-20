@@ -17,6 +17,14 @@ __PACKAGE__->table('subseq_view');
 __PACKAGE__->result_source_instance->is_virtual(1);
 
 __PACKAGE__->result_source_instance->view_definition(q[
-  SELECT SUBSTR(s.seq, ?, ?) FROM seq s
+  SELECT SUBSTR(s.seq, (?+1), ?) as seq FROM seq s
   WHERE s.sha1 = ?
 ]);
+
+__PACKAGE__->add_columns(
+  'seq' => {
+    data_type => 'varchar',
+	},
+);
+
+1;
