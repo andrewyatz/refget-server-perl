@@ -1,5 +1,5 @@
 FROM alpine:3.4
-MAINTAINER ayates
+LABEL maintainer="ayates"
 
 COPY cpanfile /
 ENV EV_EXTRA_DEFS -DEV_NO_ATFORK
