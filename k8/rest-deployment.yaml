@@ -20,7 +20,10 @@ spec:
       containers:
       - env:
         - name: DATABASE_URL
-          value: postgres://server:password@host:5432/database
+          valueFrom:
+            secretKeyRef:
+              name: fastadb-indexer-secret
+              key: url
         image: fastadb-indexer/image:latest
         name: rest
         ports:
