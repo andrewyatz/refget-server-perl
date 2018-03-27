@@ -2,6 +2,8 @@ use Test::More;
 
 use strict;
 use warnings;
+use IO::Uncompress::Gunzip 'gunzip';
+use IO::Compress::Gzip 'gzip';
 
 use Test::DBIx::Class {
   schema_class => 'Fastadb::Schema',
@@ -70,6 +72,14 @@ fixtures_ok sub {
 # Set the application with the right schema. SQLite memory databases are a per driver thing
 my $t = Test::Mojo->new('Fastadb::App');
 $t->app->schema(Schema);
+
+
+# Disable GZipping content unless boolean says otherwise. Mojo does this automatically during requests
+my $disable_gzip_accept_encoding = 1;
+$t->ua->on(start => sub {
+  my ($ua, $tx) = @_;
+  $tx->req->headers->remove('Accept-Encoding') if $disable_gzip_accept_encoding;
+});
 
 my $text_content_type = 'text/vnd.ga4gh.seq.v1.0.0+plain';
 
@@ -156,7 +166,15 @@ K");
 $t->head_ok($basic_url => { Accept => 'text/plain'})
   ->status_is(200)
   ->content_type_is($text_content_type)
-  ->header_is('Content-Length', '61');
+  ->header_is('Content-Length', '61', 'Content-Length is the same as sequence length');
+
+# Turn on Gzip and ensure we get content-length of the compressed content
+$disable_gzip_accept_encoding = 0;
+$t->head_ok($basic_url => { Accept => 'text/plain'})
+  ->status_is(200, 'Accept-Encoding does not affect URL success')
+  ->content_type_is($text_content_type, 'Content-Type remains text/plain with Accept-Encoding')
+  ->header_is('Content-Length', '69', 'Content-Length of Accept-Encoding is set to 69');
+$disable_gzip_accept_encoding = 1;
 
 # Switching and testing content types are correct
 $t->head_ok($basic_url => { Accept => $text_content_type})
@@ -167,6 +185,14 @@ $t->head_ok($basic_url => { Accept => $text_content_type})
 $t->get_ok('/sequence/bogus' => { Accept => 'text/plain' })
   ->status_is(404)
   ->content_is('Not Found');
+
+#GZipped response testing
+gzip $raw_seq, \my $compressed_seq;
+$disable_gzip_accept_encoding = 0;
+$t->get_ok($basic_url => { Accept => 'text/plain' })
+  ->status_is(200)
+  ->content_is($raw_seq);
+$disable_gzip_accept_encoding = 1;
 
 # Batch retrieval
 $t->post_ok('/batch/sequence'
