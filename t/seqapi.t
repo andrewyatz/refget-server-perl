@@ -5,7 +5,7 @@ use warnings;
 
 use Test::DBIx::Class {
   schema_class => 'Fastadb::Schema',
-  resultsets => [ qw/Seq MolType Release Molecule Division Species/ ],
+  resultsets => [ qw/SubSeq Seq MolType Release Molecule Division Species/ ],
 };
 use Test::Mojo;
 
@@ -20,9 +20,10 @@ fixtures_ok sub {
 	$release = Release->create({release => 91, species => $species, division => $division});
 };
 
+my $raw_seq_one = 'MFSELINFQNEGHECQCQCGSCKNNEQCQKSCSCPTGCNSDDKCPCGNKSEETKKSCCSGK';
 fixtures_ok sub {
   my $seq = Seq->create({
-    seq => 'MFSELINFQNEGHECQCQCGSCKNNEQCQKSCSCPTGCNSDDKCPCGNKSEETKKSCCSGK',
+    seq => $raw_seq_one,
     md5 => 'b6517aa110cc10776af5c368c5342f95',
     sha1 => '2db01e3048c926193f525e295662a901b274a461',
     sha256 => '118fc0d17e5eee7e0b98f770844fade5a717e8a78d86cf8b1f81a13ffdbd269b',
@@ -74,7 +75,9 @@ my $text_content_type = 'text/vnd.ga4gh.seq.v1.0.0+plain';
 
 my $md5 = 'b6517aa110cc10776af5c368c5342f95';
 my $seq_obj = Seq->get_seq($md5, 'md5');
-my $raw_seq = $seq_obj->seq();
+my $raw_seq = $seq_obj->get_seq(SubSeq);
+is($raw_seq, $raw_seq_one, 'Making sure sequence from API matches expected');
+
 foreach my $m (qw/md5 sha1 sha256/) {
   $t->get_ok('/sequence/'.$seq_obj->$m() => { Accept => 'text/plain'})
     ->status_is(200)

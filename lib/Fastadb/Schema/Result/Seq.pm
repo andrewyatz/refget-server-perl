@@ -104,34 +104,14 @@ sub default_checksum {
 }
 
 sub get_seq {
-	my ($self, $start, $end) = @_;
-	my $seq = $self->seq();
-	if(defined $start && $end) {
-
-		# We are in a circular sequence call
-		if($start > $end && $self->circular()) {
-			my $seq_size = $self->size();
-			my $subseq = substr($seq, $start, ($seq_size-$start));
-			$subseq .= substr($seq, 0, $end);
-			$seq = $subseq;
-		}
-		# Otherwise it is a normal call
-		else {
-			my $length = $end - $start;
-			$seq = substr($seq, $start, $length);
-		}
-	}
-	# Or we are requesting the start to the end
-	elsif(defined $start) {
-		$seq = substr($seq, $start);
-	}
-	return $seq;
+	my ($self, $subseq_rs, $start, $end) = @_;
+	return $subseq_rs->get_seq($self, $start, $end);
 }
 
 sub to_fasta {
-	my ($self, $start, $end, $residues_per_line) = @_;
+	my ($self, $subseq_rs, $start, $end, $residues_per_line) = @_;
 	$residues_per_line //= 60;
-	my $seq = $self->get_seq($start, $end);
+	my $seq = $self->get_seq($subseq_rs, $start, $end);
 	$seq =~ s/(\w{$residues_per_line})/$1\n/g;
 	my $id = $self->default_checksum();
 	return ">${id}\n${seq}";
