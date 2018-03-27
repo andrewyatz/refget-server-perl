@@ -13,8 +13,9 @@ sub id {
     if($start || $end) {
       return $self->render(text => 'Invalid Input', status => 400);
     }
+    #Parse header. Increase end by one as byte ranges are always from 0
     if(($start,$end) = $range =~ /(\d+)-(\d+)/) {
-      $start--; # switch into ga4gh 0 based coords
+      $end++;
     }
     else {
       return $self->render(text => 'Invalid Input', status => 400);
@@ -36,9 +37,25 @@ sub id {
     return $self->render(text => 'Invalid Range', status => 400);
   }
 
+  # Check for content specification. If nothing was specified then set to TXT
+  if(!$self->content_specified()) {
+    $self->stash->{format} = 'txt';
+  }
+
+  # Now check for status and set to 206 for partial rendering if we got a subseq from
+  # Range but not the whole sequence
+  my $status = 200;
+  if($range) {
+    $self->res->headers->accept_ranges('none');
+    my $requested_size = $end-$start;
+    if($requested_size != $seq->size()) {
+      $status = 206;
+    }
+  }
+
   $self->respond_to(
-    txt => { data => $seq->get_seq($start, $end) },
-    fasta => { data => $seq->to_fasta($start, $end) },
+    txt => sub { $self->render(data => $seq->get_seq($start, $end), status => $status); },
+    fasta => sub { $self->render(data => $seq->to_fasta($start, $end)); },
     any => { data => 'Unsupported Media Type', status => 415 }
   );
 }

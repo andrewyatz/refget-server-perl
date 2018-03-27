@@ -70,6 +70,8 @@ fixtures_ok sub {
 my $t = Test::Mojo->new('Fastadb::App');
 $t->app->schema(Schema);
 
+my $text_content_type = 'text/vnd.ga4gh.seq.v1.0.0+plain';
+
 my $md5 = 'b6517aa110cc10776af5c368c5342f95';
 my $seq_obj = Seq->get_seq($md5, 'md5');
 my $raw_seq = $seq_obj->seq();
@@ -81,14 +83,20 @@ foreach my $m (qw/md5 sha1 sha256/) {
 
 # Trying Range requests
 my $basic_url = '/sequence/'.$md5;
-$t->get_ok($basic_url => { Accept => 'text/plain', Range => 'bytes=59-61'})
-  ->status_is(200)
+$t->get_ok($basic_url => { Accept => 'text/plain', Range => 'bytes=58-60'})
+  ->status_is(206)
+  ->header_is('Accept-Ranges', 'none')
   ->content_is('SGK');
-$t->get_ok($basic_url => { Accept => 'text/plain', Range => 'bytes=59'})
+
+$t->get_ok($basic_url => { Accept => 'text/plain', Range => 'bytes=0-60'})
+  ->status_is(200)
+  ->content_is($raw_seq);
+
+$t->get_ok($basic_url => { Accept => 'text/plain', Range => 'bytes=58'})
   ->status_is(400);
-$t->get_ok($basic_url => { Accept => 'text/plain', Range => 'bytes=1-bogus'})
+$t->get_ok($basic_url => { Accept => 'text/plain', Range => 'bytes=0-bogus'})
   ->status_is(400);
-$t->get_ok($basic_url.'?start=0&end=1' => { Accept => 'text/plain', Range => 'bytes=1-2'})
+$t->get_ok($basic_url.'?start=0&end=1' => { Accept => 'text/plain', Range => 'bytes=0-2'})
   ->status_is(400)
   ->content_is('Invalid Input');
 
@@ -124,7 +132,12 @@ $t->get_ok("/sequence/${md5}?start=1000" => { Accept => 'text/plain' })
   ->status_is(400)
   ->content_is('Invalid Range');
 
-# Bad formats
+# No content specified so return text/plain by default
+$t->get_ok($basic_url)
+  ->status_is(200)
+  ->content_type_is($text_content_type);
+
+# Bad formats. Say unsupported if a client was specific about the format
 $t->get_ok($basic_url => { Accept => 'text/html' })
   ->status_is(415)
   ->content_is('Unsupported Media Type');
@@ -139,8 +152,13 @@ K");
 # Trying head requests now
 $t->head_ok($basic_url => { Accept => 'text/plain'})
   ->status_is(200)
-  ->content_type_is('text/plain;charset=UTF-8')
+  ->content_type_is($text_content_type)
   ->header_is('Content-Length', '61');
+
+# Switching and testing content types are correct
+$t->head_ok($basic_url => { Accept => $text_content_type})
+  ->status_is(200)
+  ->content_type_is($text_content_type);
 
 # Bogus sequence
 $t->get_ok('/sequence/bogus' => { Accept => 'text/plain' })
@@ -171,7 +189,8 @@ $t->post_ok('/batch/sequence'
       id => 'bogus',
       found => 0
     },
-  ]);
+  ])
+  ->content_type_is('application/vnd.ga4gh.seq.v1.0.0+json');
 
 my $stable_id = 'YER087C-B';
 my $mol = Molecule->find({ id => $stable_id});

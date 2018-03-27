@@ -5,6 +5,9 @@ use Mojo::Base 'Mojolicious';
 use Mojo::URL;
 use Fastadb::Schema;
 
+our $API_VERSION = '1.0.0';
+our $API_VND = 'vnd.ga4gh.seq.v'.$API_VERSION;
+
 # Connects once for entire application. For real apps, consider using a helper
 # that can reconnect on each request if necessary.
 has schema => sub {
@@ -41,12 +44,7 @@ sub startup {
   # Route commands through the application
   my $r = $self->routes;
 
-  #Routes that just work inline
-  #  $r->options('/*' => sub {
-  #   my $c = shift;
-  #   $c->render(text => q{});
-  # });
-
+  # Default routes
   $r->get('/ping' => {ping => ''} => sub {
     my $c = shift;
     $c->render(text => "Ping");
@@ -57,8 +55,15 @@ sub startup {
   $r->get('/metadata/:id')->to(controller => 'metadata', action => 'id');
   $r->post('/batch/sequence')->to(controller => 'batchseq', action => 'batch');
 
-  # New content type of FASTA
-  $self->types->type(fasta => 'text/x-fasta');
+  # New content types
+  $self->custom_content_types();
+  $self->helper(content_specified => sub {
+    my ($c) = @_;
+    return 1 if $c->req->param('format');
+    return 1 if $c->stash->{'format'};
+    return 1 if @{$c->app->types->detect($c->req->headers->accept)};
+    return 0;
+  });
 }
 
 sub cors {
@@ -95,6 +100,21 @@ sub cors {
       }
     }
   );
+  return;
+}
+
+sub custom_content_types {
+  my ($self) = @_;
+  my $types = $self->types();
+
+  # Support all types of text
+  $types->type(txt => ["text/${API_VND}+plain", 'text/plain']);
+
+  # Support all types of JSON
+  $types->type(json => ["application/${API_VND}+json", 'application/json']);
+
+  # Support FASTA
+  $types->type(fasta => 'text/x-fasta');
   return;
 }
 
