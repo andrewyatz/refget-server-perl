@@ -1,6 +1,6 @@
 -- 
 -- Created by SQL::Translator::Producer::MySQL
--- Created on Wed Feb 14 13:06:25 2018
+-- Created on Wed Mar 28 15:13:38 2018
 -- 
 SET foreign_key_checks=0;
 
@@ -101,6 +101,21 @@ CREATE TABLE molecule (
   CONSTRAINT molecule_fk_mol_type_id FOREIGN KEY (mol_type_id) REFERENCES mol_type (mol_type_id) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT molecule_fk_release_id FOREIGN KEY (release_id) REFERENCES release (release_id) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT molecule_fk_seq_id FOREIGN KEY (seq_id) REFERENCES seq (seq_id) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB;
+
+DROP TABLE IF EXISTS synonym;
+
+--
+-- Table: synonym
+--
+CREATE TABLE synonym (
+  synonym_id integer(16) NOT NULL auto_increment,
+  molecule_id integer(16) NOT NULL,
+  synonym text NOT NULL,
+  INDEX synonym_idx_molecule_id (molecule_id),
+  PRIMARY KEY (synonym_id),
+  UNIQUE synonym_uniq (molecule_id, synonym),
+  CONSTRAINT synonym_fk_molecule_id FOREIGN KEY (molecule_id) REFERENCES molecule (molecule_id) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB;
 
 SET foreign_key_checks=1;

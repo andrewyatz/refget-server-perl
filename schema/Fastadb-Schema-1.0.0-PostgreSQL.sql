@@ -1,6 +1,6 @@
 -- 
 -- Created by SQL::Translator::Producer::PostgreSQL
--- Created on Wed Feb 14 13:06:25 2018
+-- Created on Wed Mar 28 15:13:38 2018
 -- 
 --
 -- Table: division
@@ -91,6 +91,19 @@ CREATE INDEX molecule_idx_release_id on molecule (release_id);
 CREATE INDEX molecule_idx_seq_id on molecule (seq_id);
 
 --
+-- Table: synonym
+--
+DROP TABLE synonym CASCADE;
+CREATE TABLE synonym (
+  synonym_id bigserial NOT NULL,
+  molecule_id bigint NOT NULL,
+  synonym character varying(256) NOT NULL,
+  PRIMARY KEY (synonym_id),
+  CONSTRAINT synonym_uniq UNIQUE (molecule_id, synonym)
+);
+CREATE INDEX synonym_idx_molecule_id on synonym (molecule_id);
+
+--
 -- Foreign Key Definitions
 --
 
@@ -108,4 +121,7 @@ ALTER TABLE molecule ADD CONSTRAINT molecule_fk_release_id FOREIGN KEY (release_
 
 ALTER TABLE molecule ADD CONSTRAINT molecule_fk_seq_id FOREIGN KEY (seq_id)
   REFERENCES seq (seq_id) ON DELETE CASCADE ON UPDATE CASCADE DEFERRABLE;
+
+ALTER TABLE synonym ADD CONSTRAINT synonym_fk_molecule_id FOREIGN KEY (molecule_id)
+  REFERENCES molecule (molecule_id) ON DELETE CASCADE ON UPDATE CASCADE DEFERRABLE;
 

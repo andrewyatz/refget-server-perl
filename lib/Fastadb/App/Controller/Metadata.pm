@@ -20,6 +20,12 @@ sub id {
   my $molecules = $seq->molecules();
   foreach my $m ($molecules->next()) {
     push(@aliases, { alias => $m->id });
+    my $synonyms = $m->synonyms();
+    if($synonyms != 0) {
+      foreach my $s ($synonyms->next()) {
+        push(@aliases, { alias => $s->synonym() });
+      }
+    }
   }
   # Check for content specification. If nothing was specified then set to json
   if(!$self->content_specified()) {

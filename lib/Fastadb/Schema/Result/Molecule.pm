@@ -62,5 +62,6 @@ __PACKAGE__->set_primary_key('molecule_id');
 __PACKAGE__->belongs_to(seq => 'Fastadb::Schema::Result::Seq', 'seq_id');
 __PACKAGE__->belongs_to(release => 'Fastadb::Schema::Result::Release', 'release_id');
 __PACKAGE__->belongs_to(mol_type => 'Fastadb::Schema::Result::MolType', 'mol_type_id');
+__PACKAGE__->has_many(synonyms => 'Fastadb::Schema::Result::Synonym', 'molecule_id');
 
 1;

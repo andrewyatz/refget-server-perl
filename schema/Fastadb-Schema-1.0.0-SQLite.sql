@@ -1,6 +1,6 @@
 -- 
 -- Created by SQL::Translator::Producer::SQLite
--- Created on Wed Feb 14 13:06:25 2018
+-- Created on Wed Mar 28 15:13:38 2018
 -- 
 
 BEGIN TRANSACTION;
@@ -111,5 +111,21 @@ CREATE INDEX molecule_idx_release_id ON molecule (release_id);
 CREATE INDEX molecule_idx_seq_id ON molecule (seq_id);
 
 CREATE UNIQUE INDEX molecule_uniq ON molecule (id, mol_type_id);
+
+--
+-- Table: synonym
+--
+DROP TABLE synonym;
+
+CREATE TABLE synonym (
+  synonym_id INTEGER PRIMARY KEY NOT NULL,
+  molecule_id integer(16) NOT NULL,
+  synonym varchar(256) NOT NULL,
+  FOREIGN KEY (molecule_id) REFERENCES molecule(molecule_id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE INDEX synonym_idx_molecule_id ON synonym (molecule_id);
+
+CREATE UNIQUE INDEX synonym_uniq ON synonym (molecule_id, synonym);
 
 COMMIT;

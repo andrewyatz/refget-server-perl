@@ -7,7 +7,7 @@ use IO::Compress::Gzip 'gzip';
 
 use Test::DBIx::Class {
   schema_class => 'Fastadb::Schema',
-  resultsets => [ qw/SubSeq Seq MolType Release Molecule Division Species/ ],
+  resultsets => [ qw/SubSeq Seq MolType Release Molecule Division Species Synonym/ ],
 };
 use Test::Mojo;
 
@@ -58,6 +58,7 @@ fixtures_ok sub {
     seq => $seq2,
     release => $release,
     mol_type => $mol_type,
+    synonyms => [ { synonym => 'synonym'} ],
   });
   Molecule->create({
     id => 'Circ',
@@ -221,22 +222,32 @@ $t->post_ok('/batch/sequence'
   ])
   ->content_type_is('application/vnd.ga4gh.seq.v1.0.0+json');
 
-my $stable_id = 'YER087C-B';
-my $mol = Molecule->find({ id => $stable_id});
-$t->get_ok('/metadata/'.$mol->seq->sha1 => { Accept => 'application/json'})
-	->status_is(200)
-  ->or(sub { diag explain $t->tx->res })
-  ->json_is({
-    metadata => {
-      id => $mol->seq->sha1,
-      length => 82,
-      aliases => [
-        { alias => $mol->seq->md5},
-        { alias => $mol->seq->sha1 },
-        { alias => $mol->seq->sha256 },
-        { alias => $stable_id },
-      ]
-    }
-  })->or(sub { diag explain $t->tx->res->json });
+my $metadata_sub = sub {
+  my ($stable_id, $synonyms) = @_;
+  $synonyms //= [];
+  my $mol = Molecule->find({ id => $stable_id });
+  my $aliases = [
+    { alias => $mol->seq->md5},
+    { alias => $mol->seq->sha1 },
+    { alias => $mol->seq->sha256 },
+    { alias => $stable_id },
+    @{$synonyms}
+  ];
+
+  $t->get_ok('/metadata/'.$mol->seq->sha1 => { Accept => 'application/json'})
+    ->status_is(200, 'Checking metadata status for '.$stable_id)
+    ->or(sub { diag explain $t->tx->res })
+    ->json_is({
+      metadata => {
+        id => $mol->seq->sha1,
+        length => $mol->seq->size,
+        aliases => $aliases
+      }
+    })->or(sub { diag explain $t->tx->res->json });
+  return;
+};
+
+$metadata_sub->('YER087C-B', [{alias => 'synonym'}]);
+$metadata_sub->('YHR055C');
 
 done_testing();
