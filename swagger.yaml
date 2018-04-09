@@ -60,7 +60,7 @@ paths:
         '416':
           description: Invalid range request specified
 
-  /metadata/{id} :
+  /sequence/{id}/metadata :
     get:
       summary: Get reference metadata from a hash
       description: Retrieve a reference metadata information using a cryptographic hash function such as sha1
