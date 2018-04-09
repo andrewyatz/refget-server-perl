@@ -234,7 +234,7 @@ my $metadata_sub = sub {
     @{$synonyms}
   ];
 
-  $t->get_ok('/metadata/'.$mol->seq->sha1 => { Accept => 'application/json'})
+  $t->get_ok('/sequence/'.$mol->seq->sha1.'/metadata' => { Accept => 'application/json'})
     ->status_is(200, 'Checking metadata status for '.$stable_id)
     ->or(sub { diag explain $t->tx->res })
     ->json_is({
