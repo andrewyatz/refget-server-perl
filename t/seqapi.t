@@ -82,7 +82,7 @@ $t->ua->on(start => sub {
   $tx->req->headers->remove('Accept-Encoding') if $disable_gzip_accept_encoding;
 });
 
-my $text_content_type = 'text/vnd.ga4gh.seq.v1.0.0+plain';
+my $text_content_type = 'text/vnd.ga4gh.seq.v1.0.0+plain; charset=us-ascii';
 
 my $md5 = 'b6517aa110cc10776af5c368c5342f95';
 my $seq_obj = Seq->get_seq($md5, 'md5');
