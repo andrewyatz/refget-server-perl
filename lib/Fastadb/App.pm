@@ -108,7 +108,7 @@ sub custom_content_types {
   my $types = $self->types();
 
   # Support all types of text
-  $types->type(txt => ["text/${API_VND}+plain", 'text/plain']);
+  $types->type(txt => ["text/${API_VND}+plain; charset=us-ascii", "text/${API_VND}+plain", 'text/plain']);
 
   # Support all types of JSON
   $types->type(json => ["application/${API_VND}+json", 'application/json']);
