@@ -111,7 +111,7 @@ sub custom_content_types {
   $types->type(txt => ["text/${API_VND}+plain", 'text/plain']);
 
   # Support all types of JSON
-  $types->type(json => ["application/${API_VND}+json", 'application/json']);
+  $types->type(json => ["application/${API_VND}+json; charset=us-ascii", "application/${API_VND}+json", 'application/json']);
 
   # Support FASTA
   $types->type(fasta => 'text/x-fasta');
