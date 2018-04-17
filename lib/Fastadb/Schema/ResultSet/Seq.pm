@@ -37,7 +37,7 @@ sub get_seq {
   $options->{columns} = [qw/seq_id md5 sha1 sha256 size circular/] if !$full_object;
 
   return $self->find({
-    $checksum_algorithm => $id
+    $checksum_algorithm => lc($id)
   },
   $options);
 }

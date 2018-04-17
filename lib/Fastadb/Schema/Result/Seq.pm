@@ -75,10 +75,10 @@ sub sqlt_deploy_hook {
 
 sub new {
 	my ( $class, $attrs ) = @_;
-	$attrs->{md5} = md5_hex($attrs->{seq}) unless defined $attrs->{md5};
-	$attrs->{sha1} = sha1_hex($attrs->{seq}) unless defined $attrs->{sha1};
-	$attrs->{sha256} = sha256_hex($attrs->{seq}) unless defined $attrs->{sha256};
-	$attrs->{sha512} = sha512_hex($attrs->{seq}) unless defined $attrs->{sha512};
+	$attrs->{md5} = lc(md5_hex($attrs->{seq})) unless defined $attrs->{md5};
+	$attrs->{sha1} = lc(sha1_hex($attrs->{seq})) unless defined $attrs->{sha1};
+	$attrs->{sha256} = lc(sha256_hex($attrs->{seq})) unless defined $attrs->{sha256};
+	$attrs->{sha512} = lc(sha512_hex($attrs->{seq})) unless defined $attrs->{sha512};
 	$attrs->{size} = length($attrs->{seq}) unless defined $attrs->{size};
 	$attrs->{circular} = 0 unless defined $attrs->{circular};
 	my $new = $class->next::method($attrs);
@@ -89,10 +89,10 @@ around seq => sub {
 	my ($orig, $self) = (shift, shift);
 	if (@_) {
 		my $value = $_[0];
-		$self->md5(md5_hex($value));
-		$self->sha1(sha1_hex($value));
-		$self->sha256(sha256_hex($value));
-		$self->sha512(sha512_hex($value));
+		$self->md5(lc(md5_hex($value)));
+		$self->sha1(lc(sha1_hex($value)));
+		$self->sha256(lc(sha256_hex($value)));
+		$self->sha512(lc(sha512_hex($value)));
 		$self->size(length($value));
 	}
 	$self->$orig(@_);

@@ -89,14 +89,26 @@ my $seq_obj = Seq->get_seq($md5, 'md5');
 my $raw_seq = $seq_obj->get_seq(SubSeq);
 is($raw_seq, $raw_seq_one, 'Making sure sequence from API matches expected');
 
-foreach my $m (qw/md5 sha1 sha256/) {
-  $t->get_ok('/sequence/'.$seq_obj->$m() => { Accept => 'text/plain'})
+# Being used for the next 5 or so tests
+my $basic_check_sub = sub {
+  my ($checksum) = @_;
+  $t->get_ok('/sequence/'.$checksum => { Accept => 'text/plain'})
     ->status_is(200)
     ->content_is($raw_seq);
+};
+
+foreach my $m (qw/md5 sha1 sha256/) {
+  $basic_check_sub->($seq_obj->$m());
 }
 
-# Trying Range requests
+# Upper case vs lower case
+$basic_check_sub->(lc($md5));
+$basic_check_sub->(uc($md5));
+
+# Basic URL
 my $basic_url = '/sequence/'.$md5;
+
+# Trying Range requests
 $t->get_ok($basic_url => { Accept => 'text/plain', Range => 'bytes=58-60'})
   ->status_is(206)
   ->header_is('Accept-Ranges', 'none')
