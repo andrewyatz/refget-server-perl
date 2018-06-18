@@ -24,17 +24,15 @@ fixtures_ok sub {
   my $seq = Seq->create({
     seq => 'MFSELINFQNEGHECQCQCGSCKNNEQCQKSCSCPTGCNSDDKCPCGNKSEETKKSCCSGK',
     md5 => 'b6517aa110cc10776af5c368c5342f95',
-    sha1 => '2db01e3048c926193f525e295662a901b274a461',
-    sha256 => '118fc0d17e5eee7e0b98f770844fade5a717e8a78d86cf8b1f81a13ffdbd269b',
-    vmcdigest => 'VMC:GS_DxwXEkpq24VDow6GvCGRyxoWvCkxpWuo',
+    trunc512 => '0f1c17124a6adb8543a30e86bc2191cb1a16bc2931a56ba8',
+    # vmcdigest => 'VMC:GS_DxwXEkpq24VDow6GvCGRyxoWvCkxpWuo',
     size => 61,
   });
   my $seq2 = Seq->create({
     seq => 'MSSPTPPGGQRTLQKRKQGSSQKVAASAPKKNTNSNNSILKIYSDEATGLRVDPLVVLFLAVGFIFSVVALHVISKVAGKLF',
     md5 => 'c8e76de5f86131da26e8dd163658290d',
-    sha1 => 'f5c6270cf86632900e741d865794f18a4ce98c8d',
-    sha256 => '22e3e2203700e0b0879ed8b350febc086de4420b6e843d17e8d5e3a11461ae0f',
-    vmcdigest => 'VMC:GS_PuY8Qw3zDRaaPHn4EVirz2YpWZxlXcbY',
+    trunc512 => '3ee63c430df30d169a3c79f81158abcf6629599c655dc6d8',
+    # vmcdigest => 'VMC:GS_PuY8Qw3zDRaaPHn4EVirz2YpWZxlXcbY',
     size => 82,
   });
 
@@ -61,11 +59,24 @@ $t->app->schema(Schema);
 my $md5 = 'b6517aa110cc10776af5c368c5342f95';
 my $seq_obj = Seq->get_seq($md5, 'md5');
 my $raw_seq = $seq_obj->seq();
-foreach my $m (qw/md5 sha1 sha256 vmcdigest/) {
+foreach my $m (qw/md5 trunc512 vmcdigest/) {
   $t->get_ok('/sequence/'.$seq_obj->$m() => { Accept => 'text/plain'})
     ->status_is(200)
     ->content_is($raw_seq);
 }
+
+# Uppercase checks
+foreach my $m (qw/md5 trunc512/) {
+  $t->get_ok('/sequence/'.uc($seq_obj->$m()) => { Accept => 'text/plain'})
+    ->status_is(200)
+    ->content_is($raw_seq);
+}
+
+# Just force vmcdigest checks
+my $vmc_digest = 'VMC:GS_DxwXEkpq24VDow6GvCGRyxoWvCkxpWuo';
+$t->get_ok('/sequence/'.$vmc_digest => { Accept => 'text/plain'})
+    ->status_is(200)
+    ->content_is($raw_seq);
 
 # Trying Range requests
 my $basic_url = '/sequence/'.$md5;
@@ -108,7 +119,7 @@ $t->get_ok($basic_url => { Accept => 'text/html' })
 # FASTA now
 $t->get_ok($basic_url => { Accept => 'text/x-fasta' })
   ->status_is(200)
-  ->content_is(">118fc0d17e5eee7e0b98f770844fade5a717e8a78d86cf8b1f81a13ffdbd269b
+  ->content_is(">0f1c17124a6adb8543a30e86bc2191cb1a16bc2931a56ba8
 MFSELINFQNEGHECQCQCGSCKNNEQCQKSCSCPTGCNSDDKCPCGNKSEETKKSCCSG
 K");
 
@@ -127,20 +138,20 @@ $t->get_ok('/sequence/bogus' => { Accept => 'text/plain' })
 $t->post_ok('/batch/sequence'
   => { Accept => 'application/json' }
   => form => {
-    id => ['2db01e3048c926193f525e295662a901b274a461', 'c8e76de5f86131da26e8dd163658290d', 'bogus']
+    id => ['0f1c17124a6adb8543a30e86bc2191cb1a16bc2931a56ba8', '3ee63c430df30d169a3c79f81158abcf6629599c655dc6d8', 'bogus']
   })
   ->status_is(200)
   ->json_is([
     {
-      id => '2db01e3048c926193f525e295662a901b274a461',
+      id => '0f1c17124a6adb8543a30e86bc2191cb1a16bc2931a56ba8',
       seq => 'MFSELINFQNEGHECQCQCGSCKNNEQCQKSCSCPTGCNSDDKCPCGNKSEETKKSCCSGK',
-      sha1 => '2db01e3048c926193f525e295662a901b274a461',
+      trunc512 => '0f1c17124a6adb8543a30e86bc2191cb1a16bc2931a56ba8',
       found => 1,
     },
     {
-      id => 'c8e76de5f86131da26e8dd163658290d',
+      id => '3ee63c430df30d169a3c79f81158abcf6629599c655dc6d8',
       seq => 'MSSPTPPGGQRTLQKRKQGSSQKVAASAPKKNTNSNNSILKIYSDEATGLRVDPLVVLFLAVGFIFSVVALHVISKVAGKLF',
-      sha1 => 'f5c6270cf86632900e741d865794f18a4ce98c8d',
+      trunc512 => '3ee63c430df30d169a3c79f81158abcf6629599c655dc6d8',
       found => 1,
     },
     {
@@ -151,17 +162,16 @@ $t->post_ok('/batch/sequence'
 
 my $stable_id = 'YER087C-B';
 my $mol = Molecule->find({ id => $stable_id});
-$t->get_ok('/metadata/'.$mol->seq->sha1 => { Accept => 'application/json'})
+$t->get_ok('/metadata/'.$mol->seq->trunc512 => { Accept => 'application/json'})
 	->status_is(200)
   ->or(sub { diag explain $t->tx->res })
   ->json_is({
     metadata => {
-      id => $mol->seq->sha1,
+      id => $mol->seq->trunc512,
       length => 82,
       aliases => [
         { alias => $mol->seq->md5 },
-        { alias => $mol->seq->sha1 },
-        { alias => $mol->seq->sha256 },
+        { alias => $mol->seq->trunc512 },
         { alias => $mol->seq->vmcdigest },
         { alias => $stable_id },
       ]

@@ -12,7 +12,7 @@ sub batch {
     my $seq = $self->db()->resultset('Seq')->get_seq($id);
     if($seq) {
       $r->{found} = 1;
-      $r->{sha1} = $seq->sha1();
+      $r->{trunc512} = $seq->trunc512();
       $r->{seq} = $seq->get_seq();
     }
     push(@results, $r);

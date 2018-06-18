@@ -1,6 +1,6 @@
 -- 
 -- Created by SQL::Translator::Producer::MySQL
--- Created on Wed Feb 14 10:52:41 2018
+-- Created on Mon Jun 18 18:03:30 2018
 -- 
 SET foreign_key_checks=0;
 
@@ -37,17 +37,12 @@ CREATE TABLE seq (
   seq_id integer(16) NOT NULL auto_increment,
   seq text NOT NULL,
   md5 char(32) NOT NULL,
-  sha1 char(40) NOT NULL,
-  sha256 char(64) NOT NULL,
-  vmcdigest char(39) NOT NULL,
-  sha512 char(128) NOT NULL,
+  trunc512 char(48) NOT NULL,
   size integer(11) NOT NULL,
   INDEX md5_idx (md5),
-  INDEX sha1_idx (sha1),
-  INDEX vmcdigest_idx (vmcdigest),
-  INDEX sha512_idx (sha512),
+  INDEX trunc512_idx (trunc512),
   PRIMARY KEY (seq_id),
-  UNIQUE seq_sha256_uniq (sha256)
+  UNIQUE seq_trunc512_uniq (trunc512)
 ) ENGINE=InnoDB;
 
 DROP TABLE IF EXISTS species;

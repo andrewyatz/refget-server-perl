@@ -2,12 +2,14 @@ use strict;
 use warnings;
 use Test::More;
 
-use Fastadb::Util qw/vmc_digest/;
+use Fastadb::Util qw/vmc_digest vmc_to_trunc512/;
 use Fastadb::Fmt::Fasta;
 use File::Basename qw/dirname/;
 use File::Spec;
 
-is(vmc_digest('ACGT'), 'VMC:GS_aKF498dAxcJAqme6QYQ7EZ07-fiw8Kw2', 'Check basic round tripping of VMC digest');
+my $vmc = vmc_digest('ACGT');
+is($vmc, 'VMC:GS_aKF498dAxcJAqme6QYQ7EZ07-fiw8Kw2', 'Check basic round tripping of VMC digest');
+is(vmc_to_trunc512($vmc), '68a178f7c740c5c240aa67ba41843b119d3bf9f8b0f0ac36', 'Checking we can go back to trunc512 from VMC');
 
 my $test_data_dir = File::Spec->catdir(File::Spec->rel2abs(dirname(__FILE__)), 'data');
 
