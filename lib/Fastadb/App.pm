@@ -53,6 +53,8 @@ sub startup {
   });
 
   # Things that go to a controller
+  $r->get('/ping')->to(controller => 'service', action => 'ping');
+  $r->get('/service-info')->to(controller => 'service', action => 'service');
   $r->get('/sequence/:id')->to(controller => 'seq', action => 'id', gzip => 1);
   $r->get('/sequence/:id/metadata')->to(controller => 'metadata', action => 'id', gzip => 1);
   $r->post('/batch/sequence')->to(controller => 'batchseq', action => 'batch', gzip => 1);

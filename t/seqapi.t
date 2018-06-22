@@ -4,6 +4,7 @@ use strict;
 use warnings;
 use IO::Uncompress::Gunzip qw/gunzip $GunzipError/;
 use IO::Compress::Gzip 'gzip';
+use Mojo::JSON;
 
 use Test::DBIx::Class {
   schema_class => 'Fastadb::Schema',
@@ -83,6 +84,20 @@ $t->ua->on(start => sub {
 });
 
 my $text_content_type = 'text/vnd.ga4gh.seq.v1.0.0+plain; charset=us-ascii';
+
+# Test service level endpoints
+$t->get_ok('/ping', { Accept => 'plain/text'})
+  ->status_is(200)
+  ->content_is('Ping');
+
+$t->get_ok('/service-info', { Accept => 'application/json'})
+  ->status_is(200)
+  ->json_is({
+    supported_api_versions => ['0.1'],
+    circular_locations => Mojo::JSON::true()
+  });
+
+# Start testing the major endpoints
 
 my $md5 = 'b6517aa110cc10776af5c368c5342f95';
 my $seq_obj = Seq->get_seq($md5, 'md5');
