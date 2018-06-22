@@ -2,7 +2,7 @@ use Test::More;
 
 use strict;
 use warnings;
-use IO::Uncompress::Gunzip 'gunzip';
+use IO::Uncompress::Gunzip qw/gunzip $GunzipError/;
 use IO::Compress::Gzip 'gzip';
 
 use Test::DBIx::Class {
@@ -183,9 +183,10 @@ $t->head_ok($basic_url => { Accept => 'text/plain'})
 
 # Turn on Gzip and ensure we get content-length of the compressed content
 $disable_gzip_accept_encoding = 0;
-$t->head_ok($basic_url => { Accept => 'text/plain'})
+$t->head_ok($basic_url => { Accept => 'text/plain', 'Accept-Encoding' => 'gzip'})
   ->status_is(200, 'Accept-Encoding does not affect URL success')
   ->content_type_is($text_content_type, 'Content-Type remains text/plain with Accept-Encoding')
+  ->header_is('Transfer-Encoding', 'gzip', 'Transfer-Encoding is gzip')
   ->header_is('Content-Length', '69', 'Content-Length of Accept-Encoding is set to 69');
 $disable_gzip_accept_encoding = 1;
 
@@ -200,11 +201,12 @@ $t->get_ok('/sequence/bogus' => { Accept => 'text/plain' })
   ->content_is('Not Found');
 
 #GZipped response testing
-gzip $raw_seq, \my $compressed_seq;
 $disable_gzip_accept_encoding = 0;
 $t->get_ok($basic_url => { Accept => 'text/plain' })
-  ->status_is(200)
-  ->content_is($raw_seq);
+  ->status_is(200);
+my $compressed_resp = $t->tx->res->body;
+gunzip \$compressed_resp => \my $uncompressed_output or fail( "Gunzip failed: $GunzipError");
+is($raw_seq, $uncompressed_output, 'Content was compressed; uncompressing and we get sequence back');
 $disable_gzip_accept_encoding = 1;
 
 # Batch retrieval
