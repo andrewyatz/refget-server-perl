@@ -264,27 +264,30 @@ my $metadata_sub = sub {
   $synonyms //= [];
   my $mol = Molecule->find({ id => $stable_id });
   my $aliases = [
-      { alias => $mol->seq->md5 },
-      { alias => $mol->seq->trunc512 },
-      { alias => $mol->seq->vmcdigest },
-    { alias => $stable_id },
+      { alias => $mol->seq->vmcdigest, naming_authority => 'vmc' },
+      { alias => $stable_id, naming_authority => 'unknown' },
     @{$synonyms}
   ];
+
+  my $expected = {
+    metadata => {
+      id => $mol->seq->trunc512,
+      md5 => $mol->seq->md5,
+      trunc512 => $mol->seq->trunc512,
+      length => $mol->seq->size,
+      aliases => $aliases
+    }
+  };
 
   $t->get_ok('/sequence/'.$mol->seq->trunc512.'/metadata' => { Accept => 'application/json'})
     ->status_is(200, 'Checking metadata status for '.$stable_id)
     ->or(sub { diag explain $t->tx->res })
-    ->json_is({
-      metadata => {
-        id => $mol->seq->trunc512,
-        length => $mol->seq->size,
-        aliases => $aliases
-      }
-    })->or(sub { diag explain $t->tx->res->json });
+    ->json_is($expected)
+    ->or(sub { diag explain $t->tx->res->json; diag explain $expected});
   return;
 };
 
-$metadata_sub->('YER087C-B', [{alias => 'synonym'}]);
+$metadata_sub->('YER087C-B', [{ alias => 'synonym', naming_authority => 'unknown' }]);
 $metadata_sub->('YHR055C');
 
 done_testing();

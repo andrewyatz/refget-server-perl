@@ -13,17 +13,15 @@ sub id {
   }
 
   my @aliases = (
-    { alias => $seq->md5(), },
-    { alias => $seq->trunc512(), },
-    { alias => $seq->vmcdigest(), },
+    { alias => $seq->vmcdigest(), naming_authority => 'vmc' },
   );
   my $molecules = $seq->molecules();
   foreach my $m ($molecules->next()) {
-    push(@aliases, { alias => $m->id });
+    push(@aliases, { alias => $m->id, naming_authority => 'unknown' });
     my $synonyms = $m->synonyms();
     if($synonyms != 0) {
       foreach my $s ($synonyms->next()) {
-        push(@aliases, { alias => $s->synonym() });
+        push(@aliases, { alias => $s->synonym(), naming_authority => 'unknown' });
       }
     }
   }
@@ -37,6 +35,8 @@ sub id {
       metadata => {
         id => $id,
         length => $seq->size(),
+        md5 => $seq->md5,
+        trunc512 => $seq->trunc512,
         aliases => \@aliases
       }
     }},
