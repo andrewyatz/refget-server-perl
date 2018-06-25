@@ -1,21 +1,48 @@
 swagger: '2.0'
 info:
-  description: System for retrieving sequence and metadata concerning a reference sequence object by hash
+  description: System for retrieving sequence and metadata concerning a reference sequence object by hash identifiers
   version: '0.1'
   title: GA4GH Reference Sequence Retrieval API
 
+#host: www.ebi.ac.uk/ena/cram/sequence
 host: seqapi.herokuapp.com
 schemes:
  - https
  - http
 
 paths:
+  "/service-info":
+    get:
+      summary: Retrieve a summary of features this API deployment supports
+      produces:
+        - application/json
+      tags:
+        - Services
+      responses:
+        '200':
+          description: Display of all known configurations for a service deployment
+          schema:
+            $ref: '#/definitions/ServiceInfo'
+        '415':
+          $ref: '#/responses/BadFormat'
+  /ping:
+    get:
+      summary: Return a ping text indicating the service is up
+      produces:
+        - plain/text
+      tags:
+        - Services
+      responses:
+        '200':
+          description: Display a ping message
+        '415':
+          $ref: '#/responses/BadFormat'
   /sequence/{id}:
     get:
       summary: Get a sequence from a hash
       operationId: sequence
       description: |
-        Retrieve a reference sequence using a cryptographic hash function such as sha1
+        Retrieve a reference sequence using a hash function
       produces:
       - text/plain
       tags:
@@ -23,10 +50,10 @@ paths:
       parameters:
       - in: path
         name: id
-        description: The identifier to use. Should be a checksum hash
+        description: The identifier to use. Should be a checksum hash identifier
         required: true
         type: string
-        default: "c8e76de5f86131da26e8dd163658290d"
+        default: "6681ac2f62509cfc220d78751b8dc524"
       - in: query
         name: start
         description: Request a subsequence of the data (0-based)
@@ -56,14 +83,14 @@ paths:
         '404':
           description: Sequence was not found
         '415':
-          description: The requested sequence formatting is not supported by the server
+          $ref: '#/responses/BadFormat'
         '416':
           description: Invalid range request specified
 
   /sequence/{id}/metadata :
     get:
       summary: Get reference metadata from a hash
-      description: Retrieve a reference metadata information using a cryptographic hash function such as sha1
+      description: Retrieve a metadata about a reference sequence using a hash identifier
       produces:
         - application/json
       tags:
@@ -72,7 +99,7 @@ paths:
         - in: path
           name: id
           type: string
-          default: "c8e76de5f86131da26e8dd163658290d"
+          default: "6681ac2f62509cfc220d78751b8dc524"
           required: true
           description: The identifier to use. Should be a checksum hash
       responses:
@@ -82,6 +109,8 @@ paths:
             $ref: '#/definitions/Metadata'
         '404':
           description: Sequence hash was not found
+        '415':
+          $ref: '#/responses/BadFormat'
 
 definitions:
   Metadata:
@@ -89,8 +118,16 @@ definitions:
     properties:
       id:
         type: string
-        description: Query identifier
-        example: c8e76de5f86131da26e8dd163658290d
+        description: Query identifier. Normally the default checksum for a given service
+        example: 6681ac2f62509cfc220d78751b8dc524
+      md5:
+        type: string
+        description: MD5 checksum of the reference sequence
+        example: 6681ac2f62509cfc220d78751b8dc524
+      trunc512:
+        type: string
+        description: Truncated, to 48 characters, SHA-512 checksum of the reference sequence encoded as a HEX string
+        example: 959cb1883fc1ca9ae1394ceb475a356ead1ecceff5824ae7
       length:
         type: integer
         format: int64
@@ -98,12 +135,43 @@ definitions:
       aliases:
         type: array
         items:
-          type: object
-          properties:
-            alias:
-              type: string
-              description: A known alias for the query
+          $ref: '#/definitions/Alias'
     required:
     - id
     - length
+    - md5
     - aliases
+  Alias:
+    type: object
+    properties:
+      alias:
+        type: string
+        description: Free text alias for a given sequence
+        example: chr1, CM000663.2
+      naming_authority:
+        type: string
+        description: Name of the authority, which issued the given alias
+    required:
+      - alias
+      - naming_authority
+  ServiceInfo:
+    type: object
+    properties:
+      supported_api_versions:
+        type: array
+        items:
+          type: string
+          description: Supported versions by this API
+          example: 0.1
+      circular_locations:
+        type: boolean
+        description: Indicates if the service supports circular location queries
+    required:
+        - supported_api_versions
+        - circular_locations
+
+responses:
+  BadFormat:
+    description: The requested data format is not supported by the endpoint
+  NotFound:
+    description: The requested resource was not found
