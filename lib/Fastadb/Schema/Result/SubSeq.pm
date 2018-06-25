@@ -18,7 +18,7 @@ __PACKAGE__->result_source_instance->is_virtual(1);
 
 __PACKAGE__->result_source_instance->view_definition(q[
   SELECT SUBSTR(s.seq, (?+1), ?) as seq FROM seq s
-  WHERE s.sha1 = ?
+  WHERE s.trunc512 = ?
 ]);
 
 __PACKAGE__->add_columns(

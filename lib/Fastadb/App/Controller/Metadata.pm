@@ -14,8 +14,8 @@ sub id {
 
   my @aliases = (
     { alias => $seq->md5(), },
-    { alias => $seq->sha1(), },
-    { alias => $seq->sha256(), },
+    { alias => $seq->trunc512(), },
+    { alias => $seq->vmcdigest(), },
   );
   my $molecules = $seq->molecules();
   foreach my $m ($molecules->next()) {

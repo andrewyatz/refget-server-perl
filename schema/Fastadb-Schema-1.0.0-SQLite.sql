@@ -1,6 +1,6 @@
 -- 
 -- Created by SQL::Translator::Producer::SQLite
--- Created on Wed Mar 28 15:13:38 2018
+-- Created on Mon Jun 25 11:56:54 2018
 -- 
 
 BEGIN TRANSACTION;
@@ -38,20 +38,16 @@ CREATE TABLE seq (
   seq_id INTEGER PRIMARY KEY NOT NULL,
   seq text NOT NULL,
   md5 char(32) NOT NULL,
-  sha1 char(40) NOT NULL,
-  sha256 char(64) NOT NULL,
-  sha512 char(128) NOT NULL,
+  trunc512 char(48) NOT NULL,
   size integer(11) NOT NULL,
   circular integer NOT NULL DEFAULT 0
 );
 
 CREATE INDEX md5_idx ON seq (md5);
 
-CREATE INDEX sha1_idx ON seq (sha1);
+CREATE INDEX trunc512_idx ON seq (trunc512);
 
-CREATE INDEX sha512_idx ON seq (sha512);
-
-CREATE UNIQUE INDEX seq_sha256_uniq ON seq (sha256);
+CREATE UNIQUE INDEX seq_trunc512_uniq ON seq (trunc512);
 
 --
 -- Table: species

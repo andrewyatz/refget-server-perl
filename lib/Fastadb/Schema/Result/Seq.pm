@@ -5,8 +5,8 @@ use warnings;
 
 use base 'DBIx::Class::Core';
 use Digest::MD5 qw/md5_hex/;
-use Digest::SHA qw/sha512_hex sha256_hex sha1_hex/;
 use Class::Method::Modifiers;
+use Fastadb::Util qw/trunc512_digest trunc512_to_vmc/;
 
 __PACKAGE__->table('seq');
 
@@ -27,19 +27,9 @@ __PACKAGE__->add_columns(
 		size      => 32,
 		is_nullable => 0,
 	},
-	sha1 =>{
+	trunc512 =>{
 		data_type => 'char',
-		size      => 40,
-		is_nullable => 0,
-	},
-	sha256 =>{
-		data_type => 'char',
-		size      => 64,
-		is_nullable => 0,
-	},
-	sha512 =>{
-		data_type => 'char',
-		size      => 128,
+		size      => 48,
 		is_nullable => 0,
 	},
   size =>{
@@ -58,7 +48,7 @@ __PACKAGE__->add_columns(
 );
 
 __PACKAGE__->add_unique_constraint(
-  seq_sha256_uniq => [qw/sha256/]
+  seq_trunc512_uniq => [qw/trunc512/]
 );
 
 __PACKAGE__->set_primary_key('seq_id');
@@ -68,17 +58,17 @@ __PACKAGE__->has_many(molecules => 'Fastadb::Schema::Result::Molecule', 'seq_id'
 sub sqlt_deploy_hook {
 	my ($self, $sqlt_table) = @_;
 	$sqlt_table->add_index(name => 'md5_idx', fields => ['md5']);
-	$sqlt_table->add_index(name => 'sha1_idx', fields => ['sha1']);
-	$sqlt_table->add_index(name => 'sha512_idx', fields => ['sha512']);
+	$sqlt_table->add_index(name => 'trunc512_idx', fields => ['trunc512']);
 	return $sqlt_table;
 }
 
 sub new {
 	my ( $class, $attrs ) = @_;
-	$attrs->{md5} = lc(md5_hex($attrs->{seq})) unless defined $attrs->{md5};
-	$attrs->{sha1} = lc(sha1_hex($attrs->{seq})) unless defined $attrs->{sha1};
-	$attrs->{sha256} = lc(sha256_hex($attrs->{seq})) unless defined $attrs->{sha256};
-	$attrs->{sha512} = lc(sha512_hex($attrs->{seq})) unless defined $attrs->{sha512};
+	$attrs->{md5} = md5_hex($attrs->{seq}) unless defined $attrs->{md5};
+	$attrs->{trunc512} = trunc512_digest($attrs->{seq}) unless defined $attrs->{trunc512};
+	# force lowercase for later lookup
+	$attrs->{md5} = lc($attrs->{md5});
+	$attrs->{trunc512} = lc($attrs->{trunc512});
 	$attrs->{size} = length($attrs->{seq}) unless defined $attrs->{size};
 	$attrs->{circular} = 0 unless defined $attrs->{circular};
 	my $new = $class->next::method($attrs);
@@ -89,10 +79,8 @@ around seq => sub {
 	my ($orig, $self) = (shift, shift);
 	if (@_) {
 		my $value = $_[0];
-		$self->md5(lc(md5_hex($value)));
-		$self->sha1(lc(sha1_hex($value)));
-		$self->sha256(lc(sha256_hex($value)));
-		$self->sha512(lc(sha512_hex($value)));
+		$self->md5(md5_hex($value));
+		$self->trunc512(trunc512_digest($value));
 		$self->size(length($value));
 	}
 	$self->$orig(@_);
@@ -100,7 +88,7 @@ around seq => sub {
 
 sub default_checksum {
 	my ($self) = @_;
-	return $self->sha256();
+	return $self->trunc512();
 }
 
 sub get_seq {
@@ -115,6 +103,12 @@ sub to_fasta {
 	$seq =~ s/(\w{$residues_per_line})/$1\n/g;
 	my $id = $self->default_checksum();
 	return ">${id}\n${seq}";
+}
+
+sub vmcdigest {
+	my ($self) = @_;
+	my $trunc512 = $self->trunc512();
+	return trunc512_to_vmc($trunc512);
 }
 
 1;

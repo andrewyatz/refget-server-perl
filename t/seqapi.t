@@ -28,20 +28,21 @@ fixtures_ok sub {
   my $seq = Seq->create({
     seq => $raw_seq_one,
     md5 => 'b6517aa110cc10776af5c368c5342f95',
-    sha1 => '2db01e3048c926193f525e295662a901b274a461',
-    sha256 => '118fc0d17e5eee7e0b98f770844fade5a717e8a78d86cf8b1f81a13ffdbd269b',
+    trunc512 => '0f1c17124a6adb8543a30e86bc2191cb1a16bc2931a56ba8',
+    # vmcdigest => 'VMC:GS_DxwXEkpq24VDow6GvCGRyxoWvCkxpWuo',
     size => 61,
   });
   my $seq2 = Seq->create({
     seq => 'MSSPTPPGGQRTLQKRKQGSSQKVAASAPKKNTNSNNSILKIYSDEATGLRVDPLVVLFLAVGFIFSVVALHVISKVAGKLF',
     md5 => 'c8e76de5f86131da26e8dd163658290d',
-    sha1 => 'f5c6270cf86632900e741d865794f18a4ce98c8d',
-    sha256 => '22e3e2203700e0b0879ed8b350febc086de4420b6e843d17e8d5e3a11461ae0f',
+    trunc512 => '3ee63c430df30d169a3c79f81158abcf6629599c655dc6d8',
+    # vmcdigest => 'VMC:GS_PuY8Qw3zDRaaPHn4EVirz2YpWZxlXcbY',
     size => 82,
   });
   my $seq3 = Seq->create({
     seq => 'ABCDEFGH',
-    sha256 => 'e9a92a2ed0d53732ac13b031a27b071814231c8633c9f41844ccba884d482b16',
+    md5 => '4783e784b4fa2fba9e4d6502dbc64f8f',
+    trunc512 => '8b66b893918da31d49763a6c420b4cad75a2663682bb317d',
     size => 8,
     circular => 1
   });
@@ -106,21 +107,28 @@ is($raw_seq, $raw_seq_one, 'Making sure sequence from API matches expected');
 
 # Being used for the next 5 or so tests
 my $basic_check_sub = sub {
-  my ($checksum) = @_;
+  my ($checksum, $checksum_type) = @_;
   $t->get_ok('/sequence/'.$checksum => { Accept => 'text/plain'})
-    ->status_is(200)
-    ->content_is($raw_seq);
+    ->status_is(200, 'Testing HTTP status code for '.$checksum_type)
+    ->content_is($raw_seq, "Checking the retrieved sequence is as expected for checksum ${checksum_type}");
 };
 
-foreach my $m (qw/md5 sha1 sha256/) {
-  $basic_check_sub->($seq_obj->$m());
+foreach my $m (qw/md5 trunc512/) {
+  my $digest = $seq_obj->$m(); #meta method call for digest
+  $basic_check_sub->($digest, $m);
+  # Upper case vs lower case
+  $basic_check_sub->(uc($digest), "uppercase $m");
+  $basic_check_sub->(lc($digest), "lowercase $m");
 }
+$basic_check_sub->($seq_obj->vmcdigest(), "vmcdigest");
 
-# Upper case vs lower case
-$basic_check_sub->(lc($md5));
-$basic_check_sub->(uc($md5));
+# Just force vmcdigest checks
+my $vmc_digest = 'VMC:GS_DxwXEkpq24VDow6GvCGRyxoWvCkxpWuo';
+$t->get_ok('/sequence/'.$vmc_digest => { Accept => 'text/plain'})
+    ->status_is(200)
+    ->content_is($raw_seq);
 
-# Basic URL
+# Trying Range requests
 my $basic_url = '/sequence/'.$md5;
 
 # Trying Range requests
@@ -151,8 +159,8 @@ $t->get_ok("/sequence/${md5}?start=0&end=1" => { Accept => 'text/plain' })
 # ABCDEFGH
 # 12345678
 # Circular range of 6-3 should be: GHABC
-my $circ_sha = 'e9a92a2ed0d53732ac13b031a27b071814231c8633c9f41844ccba884d482b16';
-$t->get_ok("/sequence/${circ_sha}?start=6&end=3", => {Accept => 'text/plain' })
+my $circ_digest = '8b66b893918da31d49763a6c420b4cad75a2663682bb317d';
+$t->get_ok("/sequence/${circ_digest}?start=6&end=3", => {Accept => 'text/plain' })
   ->status_is(200, 'Successful circular request')
   ->content_is('GHABC');
 $t->get_ok("/sequence/${md5}?start=6&end=3", => {Accept => 'text/plain' })
@@ -186,7 +194,7 @@ $t->get_ok($basic_url => { Accept => 'text/html' })
 # FASTA now
 $t->get_ok($basic_url => { Accept => 'text/x-fasta' })
   ->status_is(200)
-  ->content_is(">118fc0d17e5eee7e0b98f770844fade5a717e8a78d86cf8b1f81a13ffdbd269b
+  ->content_is(">0f1c17124a6adb8543a30e86bc2191cb1a16bc2931a56ba8
 MFSELINFQNEGHECQCQCGSCKNNEQCQKSCSCPTGCNSDDKCPCGNKSEETKKSCCSG
 K");
 
@@ -228,20 +236,20 @@ $disable_gzip_accept_encoding = 1;
 $t->post_ok('/batch/sequence'
   => { Accept => 'application/json' }
   => form => {
-    id => ['2db01e3048c926193f525e295662a901b274a461', 'c8e76de5f86131da26e8dd163658290d', 'bogus']
+    id => ['0f1c17124a6adb8543a30e86bc2191cb1a16bc2931a56ba8', '3ee63c430df30d169a3c79f81158abcf6629599c655dc6d8', 'bogus']
   })
   ->status_is(200)
   ->json_is([
     {
-      id => '2db01e3048c926193f525e295662a901b274a461',
+      id => '0f1c17124a6adb8543a30e86bc2191cb1a16bc2931a56ba8',
       seq => 'MFSELINFQNEGHECQCQCGSCKNNEQCQKSCSCPTGCNSDDKCPCGNKSEETKKSCCSGK',
-      sha1 => '2db01e3048c926193f525e295662a901b274a461',
+      trunc512 => '0f1c17124a6adb8543a30e86bc2191cb1a16bc2931a56ba8',
       found => 1,
     },
     {
-      id => 'c8e76de5f86131da26e8dd163658290d',
+      id => '3ee63c430df30d169a3c79f81158abcf6629599c655dc6d8',
       seq => 'MSSPTPPGGQRTLQKRKQGSSQKVAASAPKKNTNSNNSILKIYSDEATGLRVDPLVVLFLAVGFIFSVVALHVISKVAGKLF',
-      sha1 => 'f5c6270cf86632900e741d865794f18a4ce98c8d',
+      trunc512 => '3ee63c430df30d169a3c79f81158abcf6629599c655dc6d8',
       found => 1,
     },
     {
@@ -256,19 +264,19 @@ my $metadata_sub = sub {
   $synonyms //= [];
   my $mol = Molecule->find({ id => $stable_id });
   my $aliases = [
-    { alias => $mol->seq->md5},
-    { alias => $mol->seq->sha1 },
-    { alias => $mol->seq->sha256 },
+      { alias => $mol->seq->md5 },
+      { alias => $mol->seq->trunc512 },
+      { alias => $mol->seq->vmcdigest },
     { alias => $stable_id },
     @{$synonyms}
   ];
 
-  $t->get_ok('/sequence/'.$mol->seq->sha1.'/metadata' => { Accept => 'application/json'})
+  $t->get_ok('/sequence/'.$mol->seq->trunc512.'/metadata' => { Accept => 'application/json'})
     ->status_is(200, 'Checking metadata status for '.$stable_id)
     ->or(sub { diag explain $t->tx->res })
     ->json_is({
       metadata => {
-        id => $mol->seq->sha1,
+        id => $mol->seq->trunc512,
         length => $mol->seq->size,
         aliases => $aliases
       }

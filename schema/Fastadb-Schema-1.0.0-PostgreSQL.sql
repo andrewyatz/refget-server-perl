@@ -1,6 +1,6 @@
 -- 
 -- Created by SQL::Translator::Producer::PostgreSQL
--- Created on Wed Mar 28 15:13:38 2018
+-- Created on Mon Jun 25 11:56:54 2018
 -- 
 --
 -- Table: division
@@ -32,17 +32,14 @@ CREATE TABLE seq (
   seq_id bigserial NOT NULL,
   seq text NOT NULL,
   md5 character(32) NOT NULL,
-  sha1 character(40) NOT NULL,
-  sha256 character(64) NOT NULL,
-  sha512 character(128) NOT NULL,
+  trunc512 character(48) NOT NULL,
   size bigint NOT NULL,
   circular integer DEFAULT 0 NOT NULL,
   PRIMARY KEY (seq_id),
-  CONSTRAINT seq_sha256_uniq UNIQUE (sha256)
+  CONSTRAINT seq_trunc512_uniq UNIQUE (trunc512)
 );
 CREATE INDEX md5_idx on seq (md5);
-CREATE INDEX sha1_idx on seq (sha1);
-CREATE INDEX sha512_idx on seq (sha512);
+CREATE INDEX trunc512_idx on seq (trunc512);
 
 --
 -- Table: species

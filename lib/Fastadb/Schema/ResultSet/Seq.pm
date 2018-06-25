@@ -4,12 +4,12 @@ use strict;
 use warnings;
 
 use base qw/DBIx::Class::ResultSet/;
-use Digest::SHA qw(sha256_hex);
+use Fastadb::Util qw/trunc512_digest vmc_to_trunc512/;
 
 sub create_seq {
   my ($self, $seq_hash, $molecule_type_obj, $release_obj) = @_;
-  my $hash = sha256_hex($seq_hash->{sequence});
-  my $seq_obj = $self->find_or_new({seq => $seq_hash->{sequence}, sha256 => $hash},{key => 'seq_sha256_uniq'});
+  my $hash = trunc512_digest($seq_hash->{sequence});
+  my $seq_obj = $self->find_or_new({seq => $seq_hash->{sequence}, trunc512 => $hash},{key => 'seq_trunc512_uniq'});
   my $first_seen = 0;
   if(!$seq_obj->in_storage()) {
     $first_seen = 1;
@@ -30,12 +30,17 @@ sub create_seq {
 sub get_seq {
   my ($self, $id, $checksum_algorithm, $full_object) = @_;
   $checksum_algorithm //= $self->detect_algorithm($id);
+  #Convert from VMC to trunc512 if required
+  if(defined $checksum_algorithm && $checksum_algorithm eq 'vmcdigest') {
+    $checksum_algorithm = 'trunc512';
+    $id = vmc_to_trunc512($id);
+  }
   return undef unless $self->allowed_algorithm($checksum_algorithm);
   my $options = {
     prefetch => 'molecules'
   };
-  $options->{columns} = [qw/seq_id md5 sha1 sha256 size circular/] if !$full_object;
-
+  $options->{columns} = [qw/seq_id md5 trunc512 size circular/] if !$full_object;
+  # Case insensitive search by lowercase
   return $self->find({
     $checksum_algorithm => lc($id)
   },
@@ -44,16 +49,15 @@ sub get_seq {
 
 sub detect_algorithm {
   my ($self, $key) = @_;
+  return 'vmcdigest' if $key =~ /^VMC:GS_/;
   my $length = length($key);
   my $checksum_column = ($length == 32) ? 'md5'
-                      : ($length == 40) ? 'sha1'
-                      : ($length == 64) ? 'sha256'
-                      : ($length == 128) ? 'sha512'
+                      : ($length == 48) ? 'trunc512'
                       : undef;
   return $checksum_column;
 }
 
-my %algorithms = map {$_ => 1} qw/md5 sha1 sha256 sha512/;
+my %algorithms = map {$_ => 1} qw/md5 vmcdigest trunc512/;
 sub allowed_algorithm {
   my ($self, $key) = @_;
   return 0 unless defined $key;

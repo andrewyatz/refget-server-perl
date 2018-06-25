@@ -29,7 +29,7 @@ sub get_seq {
 
 sub _sub_seq {
   my ($self, $start, $length, $seq_obj) = @_;
-  my $rs = $self->search( {}, { bind => [ $start, $length, $seq_obj->sha1() ] } );
+  my $rs = $self->search( {}, { bind => [ $start, $length, $seq_obj->trunc512() ] } );
   return $rs->next()->seq();
 }
 
