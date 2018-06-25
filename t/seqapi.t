@@ -209,7 +209,7 @@ $disable_gzip_accept_encoding = 0;
 $t->head_ok($basic_url => { Accept => 'text/plain', 'Accept-Encoding' => 'gzip'})
   ->status_is(200, 'Accept-Encoding does not affect URL success')
   ->content_type_is($text_content_type, 'Content-Type remains text/plain with Accept-Encoding')
-  ->header_is('Transfer-Encoding', 'gzip', 'Transfer-Encoding is gzip')
+  ->header_is('Vary', 'Accept-Encoding', 'Checking we set Vary on Accept-Encoding')
   ->header_is('Content-Length', '69', 'Content-Length of Accept-Encoding is set to 69');
 $disable_gzip_accept_encoding = 1;
 

@@ -128,17 +128,10 @@ sub gzip_encoding {
     return unless $c->stash->{gzip};
     # Check if user agent accepts gzip compression
     return unless ($c->req->headers->accept_encoding // q{}) =~ /gzip/i;
-    #Compress and set TransferEncoding
-    $c->res->headers->transfer_encoding('gzip');
+    $c->res->headers->append(Vary => 'Accept-Encoding');
     gzip $output, \my $compressed;
-    # Odd bug squished. With Content-Encoding didn't need this but Transfer-Encoding does need it
-    $c->res->headers->append('Content-Length' => length($compressed));
-    # Second odd bug where we have to write a chunk and then finish it because we now use
-    # transfer encoding. I think it's something in Mojo that's doing this link but
-    # this solves it
-    $c->write_chunk($compressed => sub {
-      $c->finish();
-    });
+    $c->res->headers->content_encoding('gzip');
+    $$output = $compressed;
   });
 }
 
