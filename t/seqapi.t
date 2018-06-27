@@ -217,7 +217,7 @@ $t->head_ok($basic_url => { Accept => 'text/plain', 'Accept-Encoding' => 'gzip'}
   ->status_is(200, 'Accept-Encoding does not affect URL success')
   ->content_type_is($text_content_type, 'Content-Type remains text/plain with Accept-Encoding gzip')
   ->header_is('Vary', 'Accept-Encoding', 'Transfer-Encoding is gzip')
-  ->header_is('Content-Length', '61', 'Content-Length of Accept-Encoding is set to 61 (because Mojo decompressed it)');
+  ->header_is('Content-Length', '69', 'Content-Length of Accept-Encoding is set to 69');
 
 $disable_gzip_accept_encoding = 1;
 

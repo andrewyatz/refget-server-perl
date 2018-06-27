@@ -160,7 +160,7 @@ sub gzip_encoding {
       });
     }
     else {
-      $output = $compressed;
+      $$output = $compressed;
     }
   });
 }
