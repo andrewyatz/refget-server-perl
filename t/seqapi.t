@@ -206,11 +206,19 @@ $t->head_ok($basic_url => { Accept => 'text/plain'})
 
 # Turn on Gzip and ensure we get content-length of the compressed content
 $disable_gzip_accept_encoding = 0;
+$t->head_ok($basic_url => { Accept => 'text/plain', 'TE' => 'gzip'})
+  ->status_is(200, 'Accept-Encoding does not affect URL success')
+  ->content_type_is($text_content_type, 'Content-Type remains text/plain with TE: gzip')
+  ->header_is('Transfer-Encoding', 'chunked, gzip', 'Transfer-Encoding is gzip')
+  ->header_is('Content-Length', '69', 'Content-Length of Accept-Encoding is set to 69');
+
+#Test Accept-Encoding
 $t->head_ok($basic_url => { Accept => 'text/plain', 'Accept-Encoding' => 'gzip'})
   ->status_is(200, 'Accept-Encoding does not affect URL success')
-  ->content_type_is($text_content_type, 'Content-Type remains text/plain with Accept-Encoding')
-  ->header_is('Vary', 'Accept-Encoding', 'Checking we set Vary on Accept-Encoding')
-  ->header_is('Content-Length', '69', 'Content-Length of Accept-Encoding is set to 69');
+  ->content_type_is($text_content_type, 'Content-Type remains text/plain with Accept-Encoding gzip')
+  ->header_is('Vary', 'Accept-Encoding', 'Transfer-Encoding is gzip')
+  ->header_is('Content-Length', '61', 'Content-Length of Accept-Encoding is set to 61 (because Mojo decompressed it)');
+
 $disable_gzip_accept_encoding = 1;
 
 # Switching and testing content types are correct
@@ -225,7 +233,7 @@ $t->get_ok('/sequence/bogus' => { Accept => 'text/plain' })
 
 #GZipped response testing
 $disable_gzip_accept_encoding = 0;
-$t->get_ok($basic_url => { Accept => 'text/plain' })
+$t->get_ok($basic_url => { Accept => 'text/plain', 'TE' => 'gzip' })
   ->status_is(200);
 my $compressed_resp = $t->tx->res->body;
 gunzip \$compressed_resp => \my $uncompressed_output or fail( "Gunzip failed: $GunzipError");

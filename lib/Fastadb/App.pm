@@ -120,18 +120,48 @@ sub custom_content_types {
   return;
 }
 
+# Support TE based encoding 1st, as the spec defines, but also Accept-Encoding (the more generally supported version)
 sub gzip_encoding {
   my ($self) = @_;
   $self->hook(after_render => sub {
     my ($c, $output, $format) = @_;
     # Check if "gzip => 1" has been set in the stash
     return unless $c->stash->{gzip};
-    # Check if user agent accepts gzip compression
-    return unless ($c->req->headers->accept_encoding // q{}) =~ /gzip/i;
-    $c->res->headers->append(Vary => 'Accept-Encoding');
+
+    # Check for TE first
+    my $chunk = 0;
+    if(($c->req->headers->te // q{}) =~ /gzip/i) {
+      $c->res->headers->transfer_encoding('chunked, gzip');
+      $chunk = 1;
+    }
+    # Then check for Accept-Encoding
+    elsif(($c->req->headers->accept_encoding // q{}) =~ /gzip/i) {
+      $c->res->headers->vary('Accept-Encoding');
+      $c->res->headers->content_encoding('gzip');
+    }
+    # If not then return without compression
+    else {
+      return;
+    }
+
+    #Compress
     gzip $output, \my $compressed;
-    $c->res->headers->content_encoding('gzip');
-    $$output = $compressed;
+
+    # Write chunk or just set output
+    if($chunk) {
+      # Odd bug squished. With Content-Encoding didn't need this but Transfer-Encoding does need it
+      $c->res->headers->append('Content-Length' => length($compressed));
+      # Second odd bug where we have to write a chunk and then finish it because we now use
+      # transfer encoding. I think it's something in Mojo that's doing this link but
+      # this solves it
+
+      $c->write_chunk($compressed => sub {
+        $c->finish();
+      });
+    }
+    else {
+      $output = $compressed;
+    }
   });
 }
 
