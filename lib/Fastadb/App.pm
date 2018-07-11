@@ -53,11 +53,11 @@ sub startup {
   });
 
   # Things that go to a controller
-  $r->get('/ping')->to(controller => 'service', action => 'ping');
-  $r->get('/sequence/service-info')->to(controller => 'service', action => 'service');
-  $r->get('/sequence/:id')->to(controller => 'seq', action => 'id', gzip => 1);
-  $r->get('/sequence/:id/metadata')->to(controller => 'metadata', action => 'id', gzip => 1);
-  $r->post('/batch/sequence')->to(controller => 'batchseq', action => 'batch', gzip => 1);
+  $r->get('/ping')->to(controller => 'service', action => 'ping', default_encoding => 'txt' );
+  $r->get('/sequence/service-info')->to(controller => 'service', action => 'service', gzip => 1, default_encoding => 'json');
+  $r->get('/sequence/:id')->to(controller => 'seq', action => 'id', gzip => 1, default_encoding => 'txt');
+  $r->get('/sequence/:id/metadata')->to(controller => 'metadata', action => 'id', gzip => 1, default_encoding => 'json' );
+  $r->post('/batch/sequence')->to(controller => 'batchseq', action => 'batch', gzip => 1, default_encoding => 'json');
 
   # New content types
   $self->custom_content_types();
@@ -67,6 +67,21 @@ sub startup {
     return 1 if $c->stash->{'format'};
     return 1 if @{$c->app->types->detect($c->req->headers->accept)};
     return 0;
+  });
+  # Default encoding support
+  $self->default_encoding();
+}
+
+sub default_encoding {
+  my ($self) = @_;
+  $self->hook(around_action => sub {
+    my ($next, $c, $action, $last) = @_;
+    if($c->stash->{default_encoding}) {
+      if(!$c->content_specified()) {
+        $c->stash->{format} = $c->stash->{default_encoding};
+      }
+    }
+    $next->();
   });
 }
 

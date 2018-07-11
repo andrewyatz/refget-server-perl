@@ -25,10 +25,6 @@ sub id {
       }
     }
   }
-  # Check for content specification. If nothing was specified then set to json
-  if(!$self->content_specified()) {
-    $self->stash->{format} = 'json';
-  }
 
   $self->respond_to(
     json => { json => {

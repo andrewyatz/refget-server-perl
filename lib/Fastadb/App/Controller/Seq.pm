@@ -39,11 +39,6 @@ sub id {
     return $self->render(text => 'Invalid Range', status => 400);
   }
 
-  # Check for content specification. If nothing was specified then set to TXT
-  if(!$self->content_specified()) {
-    $self->stash->{format} = 'txt';
-  }
-
   # Now check for status and set to 206 for partial rendering if we got a subseq from
   # Range but not the whole sequence
   my $status = 200;
