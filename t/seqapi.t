@@ -94,8 +94,10 @@ $t->get_ok('/ping', { Accept => 'plain/text'})
 $t->get_ok('/sequence/service-info', { Accept => 'application/json'})
   ->status_is(200)
   ->json_is({
-    supported_api_versions => ['0.1'],
-    circular_locations => Mojo::JSON::true()
+    supported_api_versions => ['0.2'],
+    circular_locations => Mojo::JSON::true(),
+    subsequence_limit => (1<<25),
+    algorithms => ['md5', 'trunc512', 'vmc']
   });
 
 # Start testing the major endpoints

@@ -12,8 +12,10 @@ sub service {
 	my ($self) = @_;
   $self->respond_to(
     json => { json => {
-      supported_api_versions => ['0.1'],
-      circular_locations => true()
+      supported_api_versions => ['0.2'],
+      circular_locations => true(),
+      subsequence_limit => (1<<25), # support up to 32mb
+      algorithms => [qw/md5 trunc512 vmc/],
     }},
     any  => {data => 'Unsupported Media Type', status => 415}
   );
