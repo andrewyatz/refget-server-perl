@@ -1,17 +1,29 @@
 openapi: 3.0.0
 servers:
-  - url: 'https://seqapi.herokuapp.com/'
-  - url: 'http://seqapi.herokuapp.com/'
+  - url: 'https://seqapi.herokuapp.com'
+  - url: 'http://seqapi.herokuapp.com'
 info:
   description: >-
     System for retrieving sequence and metadata concerning a reference sequence
     object by hash identifiers
   version: '0.1'
   title: GA4GH Reference Sequence Retrieval API
+  contact:
+    name: GA4GH Security Notifications
+    email: security-notification@ga4gh.org
+    url: https://www.ga4gh.org/
+tags:
+  - name: Metadata
+    description: Services linked to retriving metadata from an idetifier
+  - name: Sequence
+    description: Services linked to fetching sequence from an idetifier
+  - name: Services
+    description: Housekeeping services
 paths:
   /service-info:
     get:
       summary: Retrieve a summary of features this API deployment supports
+      operationId: serviceInfo
       tags:
         - Services
       responses:
@@ -26,6 +38,8 @@ paths:
   /ping:
     get:
       summary: Return a ping text indicating the service is up
+      description: An endpoint that is meant to return a simple response and a 2XX success code
+      operationId: ping
       tags:
         - Services
       responses:
@@ -96,6 +110,7 @@ paths:
     get:
       summary: Get reference metadata from a hash
       description: Retrieve a metadata about a reference sequence using a hash identifier
+      operationId: metadata
       tags:
         - Metadata
       parameters:
@@ -126,6 +141,7 @@ components:
   schemas:
     Metadata:
       type: object
+      description: Holds information about a sequence checksum
       properties:
         id:
           type: string
@@ -156,6 +172,7 @@ components:
         - aliases
     Alias:
       type: object
+      description: Allows the assignment of an identifier or alias to a naming authority
       properties:
         alias:
           type: string
@@ -169,6 +186,7 @@ components:
         - naming_authority
     ServiceInfo:
       type: object
+      description: Describes the capabilities of an API implementation
       properties:
         supported_api_versions:
           type: array
@@ -179,6 +197,18 @@ components:
         circular_locations:
           type: boolean
           description: Indicates if the service supports circular location queries
+        subsequence_limit:
+          type: integer
+          format: int64
+          nullable: true
+          description: Maximum length of sequence which may be requested using start and/or end query parameters
+        algorithms:
+          type: array
+          items:
+            type: string
+            description: An array of strings listing the digest algorithms that are supported
+            example: md5
       required:
         - supported_api_versions
         - circular_locations
+        - algorithms
