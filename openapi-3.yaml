@@ -177,9 +177,7 @@ components:
         alias:
           type: string
           description: Free text alias for a given sequence
-          example:
-            - chr1
-            - CM000663.2
+          example: chr1
         naming_authority:
           type: string
           description: 'Name of the authority, which issued the given alias'
