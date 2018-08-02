@@ -177,7 +177,9 @@ components:
         alias:
           type: string
           description: Free text alias for a given sequence
-          example: 'chr1, CM000663.2'
+          example:
+            - chr1
+            - CM000663.2
         naming_authority:
           type: string
           description: 'Name of the authority, which issued the given alias'
@@ -193,7 +195,7 @@ components:
           items:
             type: string
             description: Supported versions by this API
-            example: 0.1
+            example: 0.2.0
         circular_locations:
           type: boolean
           description: Indicates if the service supports circular location queries
@@ -207,7 +209,9 @@ components:
           items:
             type: string
             description: An array of strings listing the digest algorithms that are supported
-            example: md5
+            example:
+              - md5
+              - trunc512
       required:
         - supported_api_versions
         - circular_locations
