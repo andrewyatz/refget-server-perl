@@ -14,7 +14,7 @@ sub service {
     json => { json => {
       supported_api_versions => ['0.2'],
       circular_locations => true(),
-      subsequence_limit => (1<<25), # support up to 32mb
+      subsequence_limit => undef,
       algorithms => [qw/md5 trunc512 vmc/],
     }},
     any  => {data => 'Unsupported Media Type', status => 415}

@@ -96,7 +96,7 @@ $t->get_ok('/sequence/service-info', { Accept => 'application/json'})
   ->json_is({
     supported_api_versions => ['0.2'],
     circular_locations => Mojo::JSON::true(),
-    subsequence_limit => (1<<25),
+    subsequence_limit => undef,
     algorithms => ['md5', 'trunc512', 'vmc']
   });
 
