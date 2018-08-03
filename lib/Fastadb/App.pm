@@ -7,7 +7,7 @@ use Fastadb::Schema;
 use IO::Compress::Gzip 'gzip';
 
 our $API_VERSION = '1.0.0';
-our $API_VND = 'vnd.ga4gh.seq.v'.$API_VERSION;
+our $API_VND = 'vnd.ga4gh.refget.v'.$API_VERSION;
 
 # Connects once for entire application. For real apps, consider using a helper
 # that can reconnect on each request if necessary.

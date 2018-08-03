@@ -84,7 +84,7 @@ $t->ua->on(start => sub {
   $tx->req->headers->remove('Accept-Encoding') if $disable_gzip_accept_encoding;
 });
 
-my $text_content_type = 'text/vnd.ga4gh.seq.v1.0.0+plain; charset=us-ascii';
+my $text_content_type = 'text/vnd.ga4gh.refget.v1.0.0+plain; charset=us-ascii';
 
 # Test service level endpoints
 $t->get_ok('/ping', { Accept => 'plain/text'})
@@ -267,7 +267,7 @@ $t->post_ok('/batch/sequence'
       found => 0
     },
   ])
-  ->content_type_is('application/vnd.ga4gh.seq.v1.0.0+json');
+  ->content_type_is('application/vnd.ga4gh.refget.v1.0.0+json');
 
 my $metadata_sub = sub {
   my ($stable_id, $synonyms) = @_;
