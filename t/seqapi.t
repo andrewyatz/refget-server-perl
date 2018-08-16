@@ -165,6 +165,9 @@ my $circ_digest = '8b66b893918da31d49763a6c420b4cad75a2663682bb317d';
 $t->get_ok("/sequence/${circ_digest}?start=6&end=3", => {Accept => 'text/plain' })
   ->status_is(200, 'Successful circular request')
   ->content_is('GHABC');
+$t->get_ok("/sequence/${circ_digest}?start=8&end=1", => {Accept => 'text/plain' })
+  ->status_is(200, 'Successful circular request')
+  ->content_is('A');
 $t->get_ok("/sequence/${md5}?start=6&end=3", => {Accept => 'text/plain' })
   ->status_is(416, 'Cannot request circular from a non-circular sequence');
 
