@@ -296,6 +296,13 @@ my $metadata_sub = sub {
     ->or(sub { diag explain $t->tx->res })
     ->json_is($expected)
     ->or(sub { diag explain $t->tx->res->json; diag explain $expected});
+
+  # Bogus mime type
+  $t->get_ok('/sequence/'.$mol->seq->trunc512.'/metadata' => { Accept => 'application/embl'})
+    ->status_is(415, 'Bogus mime type given '.$stable_id);
+    # ->or(sub { diag explain $t->tx->res })
+    # ->json_is($expected)
+    # ->or(sub { diag explain $t->tx->res->json; diag explain $expected});
   return;
 };
 

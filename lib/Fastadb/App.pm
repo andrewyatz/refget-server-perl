@@ -66,6 +66,7 @@ sub startup {
     return 1 if $c->req->param('format');
     return 1 if $c->stash->{'format'};
     return 1 if @{$c->app->types->detect($c->req->headers->accept)};
+    return 1 if $c->req->headers->accept;
     return 0;
   });
   # Default encoding support
@@ -76,6 +77,14 @@ sub default_encoding {
   my ($self) = @_;
   $self->hook(around_action => sub {
     my ($next, $c, $action, $last) = @_;
+    # Try to look for the specificying of charset=XXXXX and strip it. Otherwise detection does not work
+    my $accept = $c->req->headers->accept;
+    if($accept && $accept =~ /;\s?charset=.+$/) {
+      $accept =~ s/;\s?charset=.+$//;
+      $c->req->headers->accept($accept);
+    }
+
+    # Now sniff for the default encoding
     if($c->stash->{default_encoding}) {
       if(!$c->content_specified()) {
         $c->stash->{format} = $c->stash->{default_encoding};
