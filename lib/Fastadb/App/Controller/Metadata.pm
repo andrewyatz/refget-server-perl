@@ -29,7 +29,6 @@ sub id {
   $self->respond_to(
     json => { json => {
       metadata => {
-        id => $id,
         length => $seq->size(),
         md5 => $seq->md5,
         trunc512 => $seq->trunc512,

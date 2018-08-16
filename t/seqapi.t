@@ -284,7 +284,6 @@ my $metadata_sub = sub {
 
   my $expected = {
     metadata => {
-      id => $mol->seq->trunc512,
       md5 => $mol->seq->md5,
       trunc512 => $mol->seq->trunc512,
       length => $mol->seq->size,
