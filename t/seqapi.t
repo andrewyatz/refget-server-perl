@@ -73,6 +73,7 @@ fixtures_ok sub {
 },'Installed fixtures';
 
 # Set the application with the right schema. SQLite memory databases are a per driver thing
+$ENV{APP_ENABLE_COMPRESSION} = 1;
 my $t = Test::Mojo->new('Fastadb::App');
 $t->app->schema(Schema);
 

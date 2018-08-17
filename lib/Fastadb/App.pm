@@ -38,7 +38,9 @@ sub startup {
   }
 
   $self->cors();
-  $self->gzip_encoding();
+  if($ENV{APP_ENABLE_COMPRESSION}) {
+    $self->gzip_encoding();
+  }
 
   # Install the schema helper
   $self->helper(db => sub { $self->app()->schema() });
