@@ -12,6 +12,7 @@ our @ISA = qw(Exporter);
 our @EXPORT_OK = qw/
   trunc512_digest vmc_digest
   vmc_to_trunc512 trunc512_to_vmc
+	detect_algorithm allowed_algorithm available_algorithms
 /;
 
 sub trunc512_digest {
@@ -52,6 +53,27 @@ sub trunc512_to_vmc {
 	my $digest_length = length($trunc_digest)/2;
 	my $digest = pack("H*", $trunc_digest);
 	return _vmc_bytes($digest, $digest_length);
+}
+
+sub detect_algorithm {
+  my ($key) = @_;
+  return 'vmcdigest' if $key =~ /^VMC:GS_/;
+  my $length = length($key);
+  my $checksum_column = ($length == 32) ? 'md5'
+                      : ($length == 48) ? 'trunc512'
+                      : undef;
+  return $checksum_column;
+}
+
+my %algorithms = map {$_ => 1} qw/md5 trunc512 vmcdigest/;
+sub allowed_algorithm {
+  my ($key) = @_;
+  return 0 unless defined $key;
+  return exists $algorithms{$key};
+}
+
+sub available_algorithms {
+  return keys %algorithms;
 }
 
 1;

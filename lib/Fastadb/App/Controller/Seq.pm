@@ -1,14 +1,20 @@
 package Fastadb::App::Controller::Seq;
 
 use Mojo::Base 'Mojolicious::Controller';
+use Fastadb::Util qw/allowed_algorithm/;
 
 sub id {
   my ($self) = @_;
   my $id = $self->param('id');
   my $start = $self->param('start');
   my $end = $self->param('end');
+  my $algorithm = $self->param('algorithm');
 
-  my $seq_obj = $self->db()->resultset('Seq')->get_seq($id);
+  if($algorithm && !allowed_algorithm($algorithm)) {
+    return $self->render(text => 'Bad Request', status => 400);
+  }
+
+  my $seq_obj = $self->db()->resultset('Seq')->get_seq($id, $algorithm);
   my $sub_seq = $self->db()->resultset('SubSeq');
   if(!$seq_obj) {
     return $self->render(text => 'Not Found', status => 404);

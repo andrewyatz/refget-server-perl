@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use base qw/DBIx::Class::ResultSet/;
-use Fastadb::Util qw/trunc512_digest vmc_to_trunc512/;
+use Fastadb::Util qw/trunc512_digest vmc_to_trunc512 detect_algorithm allowed_algorithm/;
 
 sub create_seq {
   my ($self, $seq_hash, $molecule_type_obj, $release_obj) = @_;
@@ -29,13 +29,13 @@ sub create_seq {
 
 sub get_seq {
   my ($self, $id, $checksum_algorithm, $full_object) = @_;
-  $checksum_algorithm //= $self->detect_algorithm($id);
+  $checksum_algorithm //= detect_algorithm($id);
   #Convert from VMC to trunc512 if required
   if(defined $checksum_algorithm && $checksum_algorithm eq 'vmcdigest') {
     $checksum_algorithm = 'trunc512';
     $id = vmc_to_trunc512($id);
   }
-  return undef unless $self->allowed_algorithm($checksum_algorithm);
+  return undef unless allowed_algorithm($checksum_algorithm);
   my $options = {
     prefetch => 'molecules'
   };
@@ -45,28 +45,6 @@ sub get_seq {
     $checksum_algorithm => lc($id)
   },
   $options);
-}
-
-sub detect_algorithm {
-  my ($self, $key) = @_;
-  return 'vmcdigest' if $key =~ /^VMC:GS_/;
-  my $length = length($key);
-  my $checksum_column = ($length == 32) ? 'md5'
-                      : ($length == 48) ? 'trunc512'
-                      : undef;
-  return $checksum_column;
-}
-
-my %algorithms = map {$_ => 1} qw/md5 vmcdigest trunc512/;
-sub allowed_algorithm {
-  my ($self, $key) = @_;
-  return 0 unless defined $key;
-  return exists $algorithms{$key};
-}
-
-sub available_alorithms {
-  my ($self) = @_;
-  return keys %algorithms;
 }
 
 1;
