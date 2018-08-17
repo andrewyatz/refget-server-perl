@@ -166,7 +166,7 @@ my $circ_digest = '8b66b893918da31d49763a6c420b4cad75a2663682bb317d';
 $t->get_ok("/sequence/${circ_digest}?start=6&end=3", => {Accept => 'text/plain' })
   ->status_is(200, 'Successful circular request')
   ->content_is('GHABC');
-$t->get_ok("/sequence/${circ_digest}?start=8&end=1", => {Accept => 'text/plain' })
+$t->get_ok("/sequence/${circ_digest}?start=0&end=1", => {Accept => 'text/plain' })
   ->status_is(200, 'Successful circular request')
   ->content_is('A');
 $t->get_ok("/sequence/${md5}?start=6&end=3", => {Accept => 'text/plain' })
@@ -184,8 +184,8 @@ $t->get_ok("/sequence/${md5}?start=10&end=1" => { Accept => 'text/plain' })
 
 # Bad start/end request
 $t->get_ok("/sequence/${md5}?start=1000" => { Accept => 'text/plain' })
-  ->status_is(400)
-  ->content_is('Invalid Range');
+  ->status_is(416)
+  ->content_is('Range Not Satisfiable');
 
 # No content specified so return text/plain by default
 $t->get_ok($basic_url)
@@ -298,12 +298,13 @@ my $metadata_sub = sub {
     ->json_is($expected)
     ->or(sub { diag explain $t->tx->res->json; diag explain $expected});
 
+  $t->get_ok('/sequence/'.$mol->seq->trunc512.'/metadata' => { Accept => q{}})
+    ->status_is(200, 'Checking metadata status for '.$stable_id.' with an empty Accept header set')
+    ->json_is($expected);
+
   # Bogus mime type
   $t->get_ok('/sequence/'.$mol->seq->trunc512.'/metadata' => { Accept => 'application/embl'})
     ->status_is(415, 'Bogus mime type given '.$stable_id);
-    # ->or(sub { diag explain $t->tx->res })
-    # ->json_is($expected)
-    # ->or(sub { diag explain $t->tx->res->json; diag explain $expected});
   return;
 };
 
