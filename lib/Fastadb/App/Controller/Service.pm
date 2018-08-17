@@ -11,12 +11,12 @@ sub ping {
 sub service {
 	my ($self) = @_;
   $self->respond_to(
-    json => { json => {
+    json => { json => {service => {
       supported_api_versions => ['0.2'],
-      circular_locations => true(),
+      circular_supported => true(),
       subsequence_limit => undef,
       algorithms => [qw/md5 trunc512 vmc/],
-    }},
+    }}},
     any  => {data => 'Unsupported Media Type', status => 415}
   );
 }
