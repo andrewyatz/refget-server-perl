@@ -17,6 +17,7 @@ sub id {
   );
   my $molecules = $seq->molecules();
   foreach my $m ($molecules->next()) {
+    next if ! defined $m;
     push(@aliases, { alias => $m->id, naming_authority => 'unknown' });
     my $synonyms = $m->synonyms();
     if($synonyms != 0) {
