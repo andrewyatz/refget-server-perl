@@ -1,8 +1,3 @@
-<!DOCTYPE html>
-<html>
-  <head><title>Server error</title></head>
-  <body>
-    <h1>Server error</h1>
-    <p>Internal server exception</p>
-  </body>
-</html>
+% layout 'default', title => 'Server error';
+<h1>Server error</h1>
+<p>Internal server exception</p>

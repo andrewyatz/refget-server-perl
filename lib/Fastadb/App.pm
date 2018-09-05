@@ -49,10 +49,14 @@ sub startup {
   my $r = $self->routes;
 
   # Default routes
-  $r->get('/ping' => {ping => ''} => sub {
+  $r->get('/ping' => sub {
     my $c = shift;
     $c->render(text => "Ping");
   });
+  $r->get($_ => sub {
+    my $c = shift;
+    $c->render(template => 'index');
+  }) for qw|/ /index|;
 
   # Things that go to a controller
   $r->get('/ping')->to(controller => 'service', action => 'ping', default_encoding => 'txt' );

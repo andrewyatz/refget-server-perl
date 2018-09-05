@@ -1,0 +1,17 @@
+% layout 'default', title => 'Refget - reference sequence retrieval implementation';
+<h1>Refget - reference sequence retrieval implementation</h1>
+<h2>The Specification</h2>
+<p>
+Refget enables access to reference sequences using an identifier derived from the sequence itself. This is normally an identifer derived from passing the sequence through a hash function such as MD5 or SHA-512. More information can be found from the <a href='https://samtools.github.io/hts-specs/refget.html'>samtools specification pages</a>. In addition an <a href='https://samtools.github.io/hts-specs/pub/refget-openapi.yaml'>OpenAPI 3.0 YAML definition</a> is available.
+</p>
+<h2>URLs to get you started</h2>
+<p>
+<dl>
+<dt>Example sub sequence</dt>
+<dd><a href='/sequence/6681ac2f62509cfc220d78751b8dc524.txt?start=0&end=10'><code>/sequence/6681ac2f62509cfc220d78751b8dc524?start=0&end=10</code></a></dd>
+<dt>Example metadata</dt>
+<dd><a href='/sequence/6681ac2f62509cfc220d78751b8dc524/metadata.json'><code>/sequence/6681ac2f62509cfc220d78751b8dc524/metadata</code></a></dd>
+<dt>Service information</dt>
+<dd><a href='/sequence/service-info.json'><code>/sequence/service-info</code></a></dd>
+</dl>
+</p>

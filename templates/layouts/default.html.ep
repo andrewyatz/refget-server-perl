@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" href="https://unpkg.com/picnic"/>
+    <title><%= $title %></title>
+  </head>
+  <body style="padding: 10px">
+    <main>
+      <%= content %>
+    </main>
+  </body>
+</html>
