@@ -131,22 +131,6 @@ $t->get_ok('/sequence/'.$vmc_digest => { Accept => 'text/plain'})
     ->status_is(200)
     ->content_is($raw_seq);
 
-# Force the algorithm in the lookup. First do it right, then pass the wrong one in then pass a bogus one in
-$t->get_ok('/sequence/'.$md5.'?algorithm=md5' => { Accept => 'text/plain'})
-    ->status_is(200);
-$t->get_ok('/sequence/'.$md5.'?algorithm=trunc512' => { Accept => 'text/plain'})
-    ->status_is(404);
-$t->get_ok('/sequence/'.$md5.'?algorithm=bogus' => { Accept => 'text/plain'})
-    ->status_is(400);
-
-# Do the same in metadata
-$t->get_ok('/sequence/'.$md5.'/metadata?algorithm=md5')
-    ->status_is(200);
-$t->get_ok('/sequence/'.$md5.'/metadata?algorithm=trunc512')
-    ->status_is(404);
-$t->get_ok('/sequence/'.$md5.'/metadata?algorithm=bogus')
-    ->status_is(400);
-
 # Trying Range requests
 my $basic_url = '/sequence/'.$md5;
 

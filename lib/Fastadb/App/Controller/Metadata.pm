@@ -5,14 +5,8 @@ use Fastadb::Util qw/allowed_algorithm/;
 sub id {
   my ($self) = @_;
   my $id = $self->param('id');
-  my $algorithm = $self->param('algorithm');
-
-  if($algorithm && !allowed_algorithm($algorithm)) {
-    return $self->render(text => 'Bad Request', status => 400);
-  }
-
   my $no_full_object = 0;
-  my $seq = $self->db()->resultset('Seq')->get_seq($id, $algorithm, $no_full_object);
+  my $seq = $self->db()->resultset('Seq')->get_seq($id, undef, $no_full_object);
 
   if(!$seq) {
     return $self->render(text => 'Not Found', status => 404);
