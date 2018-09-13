@@ -31,7 +31,11 @@ sub id {
     if($seq_obj->circular() && $start > $end) { # cannot request circs across the ori using range
       return $self->render(text => 'Range Not Satisfiable', status => 416);
     }
-    return $self->render(text => 'Bad Request', status => 400) if $start >= $seq_size;
+    if($start >= $seq_size) {
+      return $self->render(text => 'Range Not Satisfiable', status => 416) if defined $end;
+      return $self->render(text => 'Bad Request', status => 400);
+    }
+
     $end = $seq_size if $end > $seq_size;
   }
 
