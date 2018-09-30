@@ -155,7 +155,7 @@ $t->get_ok($basic_url => { Accept => 'text/plain', Range => 'bytes=58-60'})
   ->content_is('SGK');
 
 $t->get_ok($basic_url => { Accept => 'text/plain', Range => 'bytes=0-60'})
-  ->status_is(200)
+  ->status_is(206)
   ->content_is($raw_seq);
 
 $t->get_ok($basic_url => { Accept => 'text/plain', Range => 'bytes=58'})
