@@ -35,7 +35,7 @@ sub batch {
 
   $self->respond_to(
     json => { json => \@results },
-    any => { data => 'Unsupported Media Type', status => 415 }
+    any => { data => 'Unsupported Media Type', status => 406 }
   );
 }
 

@@ -85,7 +85,7 @@ sub id {
   $self->respond_to(
     txt => sub { $self->render(data => $seq_obj->get_seq($sub_seq, $start, $end), status => $status); },
     fasta => sub { $self->render(data => $seq_obj->to_fasta($sub_seq, $start, $end)); },
-    any => { data => 'Unsupported Media Type', status => 415 }
+    any => { data => 'Unsupported Media Type', status => 406 }
   );
 }
 

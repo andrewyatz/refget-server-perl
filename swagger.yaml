@@ -23,7 +23,7 @@ paths:
           description: Display of all known configurations for a service deployment
           schema:
             $ref: '#/definitions/ServiceInfo'
-        '415':
+        '406':
           $ref: '#/responses/BadFormat'
   /ping:
     get:
@@ -35,7 +35,7 @@ paths:
       responses:
         '200':
           description: Display a ping message
-        '415':
+        '406':
           $ref: '#/responses/BadFormat'
   /sequence/{id}:
     get:
@@ -82,7 +82,7 @@ paths:
           description: Invalid input; normally due to range parameter usage
         '404':
           description: Sequence was not found
-        '415':
+        '406':
           $ref: '#/responses/BadFormat'
         '416':
           description: Invalid range request specified
@@ -109,7 +109,7 @@ paths:
             $ref: '#/definitions/Metadata'
         '404':
           description: Sequence hash was not found
-        '415':
+        '406':
           $ref: '#/responses/BadFormat'
 
 definitions:

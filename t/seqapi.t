@@ -208,7 +208,7 @@ $t->get_ok($basic_url)
 
 # Bad formats. Say unsupported if a client was specific about the format
 $t->get_ok($basic_url => { Accept => 'text/html' })
-  ->status_is(415)
+  ->status_is(406)
   ->content_is('Unsupported Media Type');
 
 # FASTA now
@@ -318,7 +318,7 @@ my $metadata_sub = sub {
 
   # Bogus mime type
   $t->get_ok('/sequence/'.$mol->seq->trunc512.'/metadata' => { Accept => 'application/embl'})
-    ->status_is(415, 'Bogus mime type given '.$stable_id);
+    ->status_is(406, 'Bogus mime type given '.$stable_id);
   return;
 };
 
