@@ -32,7 +32,7 @@ sub service {
       subsequence_limit => undef,
       algorithms => [sort {$a cmp $b} available_algorithms()],
     }}},
-    any  => {data => 'Unsupported Media Type', status => 406}
+    any  => {data => 'Not Acceptable', status => 406}
   );
 }
 

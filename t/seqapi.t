@@ -209,7 +209,7 @@ $t->get_ok($basic_url)
 # Bad formats. Say unsupported if a client was specific about the format
 $t->get_ok($basic_url => { Accept => 'text/html' })
   ->status_is(406)
-  ->content_is('Unsupported Media Type');
+  ->content_is('Not Acceptable');
 
 # FASTA now
 $t->get_ok($basic_url => { Accept => 'text/x-fasta' })

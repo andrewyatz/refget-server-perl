@@ -72,20 +72,14 @@ sub id {
     $self->res->headers->accept_ranges('none');
   }
 
-  # Now check for status and set to 206 for partial rendering if we got a subseq from
-  # Range but not the whole sequence
+  # Now check for status and set to 206 for Range and leave as 200 for other situations
   my $status = 200;
-  if($range) {
-    my $requested_size = $end-$start;
-    if($requested_size != $seq_size) {
-      $status = 206;
-    }
-  }
+  $status = 206 if $range;
 
   $self->respond_to(
     txt => sub { $self->render(data => $seq_obj->get_seq($sub_seq, $start, $end), status => $status); },
     fasta => sub { $self->render(data => $seq_obj->to_fasta($sub_seq, $start, $end)); },
-    any => { data => 'Unsupported Media Type', status => 406 }
+    any => { data => 'Not Acceptable', status => 406 }
   );
 }
 

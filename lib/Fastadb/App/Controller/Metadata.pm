@@ -50,7 +50,7 @@ sub id {
         aliases => \@aliases
       }
     }},
-    any  => {data => 'Unsupported Media Type', status => 406}
+    any  => {data => 'Not Acceptable', status => 406}
   );
 }
 
