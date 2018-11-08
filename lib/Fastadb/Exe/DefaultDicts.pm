@@ -40,6 +40,7 @@ sub build_default_divisions {
     bacteria
     metazoa
     fungi
+    none
   /];
 }
 
