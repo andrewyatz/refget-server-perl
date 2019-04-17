@@ -1,3 +1,3 @@
 #!/bin/sh
 
-PERL5LIB=$PWD/lib:$PERL5LIB MOJO_CONFIG=$PWD/.heroku/refget-app.heroku.json DATABASE_URL=sqlite:///$PWD/compliance-data.refget.db ./bin/app.pl daemon --listen http://*:$PORT --mode production
+PERL5LIB=$PWD/lib:$PERL5LIB MOJO_CONFIG=$PWD/.heroku/refget-app.heroku.json DATABASE_URL=sqlite:///$PWD/compliance-data/compliance.db ./bin/app.pl daemon --listen http://*:$PORT --mode production
