@@ -27,7 +27,7 @@ sub service {
 	my ($self) = @_;
   $self->respond_to(
     json => { json => {service => {
-      supported_api_versions => ['0.2'],
+      supported_api_versions => ['1.0.0'],
       circular_supported => true(),
       subsequence_limit => undef,
       algorithms => [sort {$a cmp $b} available_algorithms()],
