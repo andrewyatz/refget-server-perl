@@ -9,6 +9,7 @@ requires 'DBIx::Class::InflateColumn::Boolean';
 requires 'DBD::Pg';
 requires 'IO::Compress::Gzip';
 requires 'IO::Uncompress::Gunzip';
+requires 'Class::Load';
 
 # Mojo support
 requires 'Mojo';

@@ -17,14 +17,17 @@ use warnings;
 
 use Test::More;
 use Test::File;
+use Test::Exception;
 use File::Basename qw/dirname/;
 use File::Spec;
 use File::Temp qw/tempdir/;
+
 use Refget::Fmt::Fasta;
 use Refget::Exe::Import;
 use Refget::Exe::DefaultDicts;
 use Refget::SeqStore::File;
 use Refget::SeqStore::DBIx;
+use Refget::SeqStore::Builder;
 
 use Test::DBIx::Class {
   schema_class => 'Refget::Schema',
@@ -78,9 +81,10 @@ my $test_subseq = sub {
 	}
 };
 
+my $root_dir = tempdir(TMPDIR => 1, CLEANUP => 1);
+
 # Testing the file based storage system
 {
-	my $root_dir = tempdir(TMPDIR => 1, CLEANUP => 1);
 	my $seq_store = Refget::SeqStore::File->new(root_dir => $root_dir);
 	$run_import->($seq_store);
 
@@ -117,6 +121,18 @@ reset_schema;
 
 	# Test subseq retrieval
 	$test_subseq->($seq_store);
+}
+
+# Test the builder code
+{
+	throws_ok { Refget::SeqStore::Builder->build_from_config({}) } qr/seq_store/, 'No seq_store caught';
+	throws_ok { Refget::SeqStore::Builder->build_from_config({seq_store => 'File'}) } qr/seq_store_args/, 'No seq_store_args caught';
+	throws_ok { Refget::SeqStore::Builder->build_from_config({seq_store => 'File', seq_store_args => q{}}) } qr/not a hash/, 'Bad seq_store_args caught';
+	my $file_seq_store = Refget::SeqStore::Builder->build_from_config({
+		seq_store => 'File',
+		seq_store_args => {root_dir => $root_dir, checksum => 'trunc512'}
+	});
+	ok(defined $file_seq_store, 'Generated a file seq store correctly');
 }
 
 done_testing();

@@ -87,7 +87,7 @@ fixtures_ok sub {
 $ENV{APP_ENABLE_COMPRESSION} = 1;
 my $t = Test::Mojo->new(
   'Refget::App',
-  { root_dir => './t/hts-ref', seq_checksum => 'trunc512' }
+  { seq_store => 'File', seq_store_args => { root_dir => './t/hts-ref', checksum => 'trunc512' } }
 );
 $t->app->schema(Schema);
 
@@ -328,7 +328,7 @@ $metadata_sub->('YHR055C');
 {
   my $t_md5 = Test::Mojo->new(
     'Refget::App',
-    { root_dir => './t/md5-hts-ref', seq_checksum => 'md5' }
+    { seq_store => 'File', seq_store_args => { root_dir => './t/md5-hts-ref', checksum => 'md5' } }
   );
   $t_md5->app->schema(Schema);
   foreach my $m (qw/md5 trunc512/) {

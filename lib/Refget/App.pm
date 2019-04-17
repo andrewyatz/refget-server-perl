@@ -19,7 +19,7 @@ use Mojo::Base 'Mojolicious';
 use Mojo::URL;
 use Refget::Schema;
 use IO::Compress::Gzip 'gzip';
-use Refget::SeqStore::File;
+use Refget::SeqStore::Builder;
 
 our $API_VERSION = '1.0.0';
 our $API_VND = 'vnd.ga4gh.refget.v'.$API_VERSION;
@@ -68,7 +68,7 @@ sub startup {
   $self->helper(seq_fetcher => sub {
     my ($self) = @_;
     my $config = $self->config();
-    return Refget::SeqStore::File->new(root_dir => $config->{root_dir}, checksum => $config->{seq_checksum});
+    return Refget::SeqStore::Builder->build_from_config($config);
   });
 
   # Route commands through the application

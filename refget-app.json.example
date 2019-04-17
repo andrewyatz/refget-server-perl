@@ -1,4 +1,7 @@
 {
-  "root_dir": "./hts-ref",
-  "seq_checksum" : "trunc512"
+  "seq_store" : "File",
+  "seq_store_args" : {
+    "root_dir": "./hts-ref",
+    "checksum" : "trunc512"
+  }
 }
