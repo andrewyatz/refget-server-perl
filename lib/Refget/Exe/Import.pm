@@ -64,9 +64,7 @@ sub run {
       $count = 0;
     }
   }
-  if($count > 0) {
-    $guard->commit();
-  }
+  $guard->commit();
   return;
 }
 

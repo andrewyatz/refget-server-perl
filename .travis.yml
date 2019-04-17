@@ -15,4 +15,4 @@ install:
   - cpanm --quiet --installdeps --notest .
 
 script:
-  - PERL5LIB=$PWD/lib:$PERL5LIB prove t
+  - PERL5LIB=$PWD/lib:$PERL5LIB prove -v t
