@@ -108,7 +108,7 @@ $t->get_ok('/ping', { Accept => 'plain/text'})
 $t->get_ok('/sequence/service-info', { Accept => 'application/json'})
   ->status_is(200)
   ->json_is({service => {
-    supported_api_versions => ['0.2'],
+    supported_api_versions => ['1.0.0'],
     circular_supported => Mojo::JSON::true(),
     subsequence_limit => undef,
     algorithms => ['md5', 'trunc512', 'vmcdigest']
