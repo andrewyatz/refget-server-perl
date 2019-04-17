@@ -1,5 +1,13 @@
 # Decision Log
 
+## 2019-04-17 - Fastadb is now Refget
+
+Global package name change to be more inline with the way this is named.
+
+## 2019-04-16 - New file and database based sequence storage
+
+Switch to using a file based system for sequence. Means a refget server can be run off a htslib generated hts-ref directory (if the server uses md5 as the default checksum). System allows for the sequence storage to be changed to any other system so long as it can implemented a `_sub_seq` and a `store` method. Schema was also changed so that database storage of sequences is still supported but in the `raw_seq` table not the `seq` table.
+
 ## 2018-02-02 - Swagger Support
 
 Write up the current proposed specification as a swagger API definition. Provides documentation for downstream users

@@ -17,23 +17,32 @@
 
 use strict;
 use warnings;
-use Fastadb::Schema;
-use Fastadb::Fmt::Fasta;
-use Fastadb::Exe::Import;
+use Refget::Schema;
+use Refget::Fmt::Fasta;
+use Refget::Exe::Import;
+use Refget::SeqStore::Builder;
+use Mojo::JSON qw/decode_json/;
+use Mojo::File qw/path/;
 
-my ($file, $release, $mol_type, $species, $division, $assembly) = @ARGV;
+my ($file, $release, $mol_type, $species, $division, $assembly, $commit_rate, $config) = @ARGV;
 
-my @dbargs = Fastadb::Schema->generate_db_args();
-my $schema = Fastadb::Schema->connect(@dbargs);
+my @dbargs = Refget::Schema->generate_db_args();
+my $schema = Refget::Schema->connect(@dbargs);
 
-my $fasta = Fastadb::Fmt::Fasta->new(file => $file, type => $mol_type);
-my $import = Fastadb::Exe::Import->new(
+my $config_file = path($config);
+my $json = decode_json($config_file->slurp());
+
+my $fasta = Refget::Fmt::Fasta->new(file => $file, type => $mol_type);
+my $seq_store = Refget::SeqStore::Builder->build_from_config($json);
+my $import = Refget::Exe::Import->new(
   schema => $schema,
+  seq_store => $seq_store,
   fasta => $fasta,
   release => $release,
   species => $species,
   division => $division,
   assembly => $assembly,
+  commit_rate => $commit_rate,
 );
 
 $import->run();

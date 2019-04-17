@@ -18,7 +18,7 @@ use strict;
 use warnings;
 
 use Test::Mojo;
-my $t = Test::Mojo->new('Fastadb::App');
+my $t = Test::Mojo->new('Refget::App', {});
 
 my $origin = q{http://www.example.org};
 $t->options_ok('/' => { Origin => $origin, 'Access-Control-Request-Method' => 'GET' } )
