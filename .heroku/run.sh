@@ -4,5 +4,5 @@
 tar zxf compliance-data.tar.gz
 
 # Substiute the path of the build dir into the heroku config
-cp $BUILD_DIR/.heroku/refget-app.heroku.json.template $BUILD_DIR/.heroku/refget-app.heroku.json
+cp .heroku/refget-app.heroku.json.template .heroku/refget-app.heroku.json
 
