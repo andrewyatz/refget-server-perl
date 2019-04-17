@@ -10,6 +10,7 @@ requires 'DBD::Pg';
 requires 'IO::Compress::Gzip';
 requires 'IO::Uncompress::Gunzip';
 requires 'Class::Load';
+requires 'Redis';
 
 # Mojo support
 requires 'Mojo';
@@ -25,4 +26,5 @@ on 'test' => sub {
   requires 'IO::Scalar';
   requires 'Test::Differences';
   requires 'Test::File';
+  requires 'Test::Mock::Redis';
 };

@@ -34,7 +34,7 @@ sub build_from_config {
 }
 
 sub build_allowed {
-  return { map {$_ => 1} qw/File DBIx/ };
+  return { map {$_ => 1} qw/File DBIx Redis/ };
 }
 
 sub type_to_class {

@@ -30,7 +30,7 @@ The server can run off a variety of database types as it uses DBIx::Class. Howev
 
 ### Config file
 
-By default the application expects to find a file called `refget-app.json` in the root directory. You can alter this by specifying `MOJO_CONFIG=path/to/json`. Consult the file `refget-app.json.example` for available configuration variables.
+By default the application expects to find a file called `refget-app.json` in the root directory. You can alter this by specifying `MOJO_CONFIG=path/to/json`. Consult the file `refget-app.json.example` for available configuration variables. This file is used to configure the sequence storage layer.
 
 ### Environment variables
 
@@ -80,12 +80,12 @@ To load sequences into a database you can use the `bin/run.pl` script. The argum
 4. Species. Give a species name
 5. A division name. If unsure set to `none`
 6. Assembly name. Normally set to the default name for an assembly. If one does not exist set it to `none`
-7. A root directory to store sequences in. Must be set
-8. A commit rate (how many times we should commit on our inserts)
+7. A commit rate (how many times we should commit on our inserts)
+8. A path to the config file. Used to create an appropriate sequence storage layer
 
 ```bash
 export DATABASE_URL=postgres://username:password@server:port/databasename
-perl -I lib ./bin/run.pl fasta.file 96 dna homo_sapiens none grch37 ./hts-ref 1000
+perl -I lib ./bin/run.pl fasta.file 96 dna homo_sapiens none grch37 1000 path/to/config.json
 ```
 
 The script will iterate through the file, loads sequences if it were not already in the database and links additional metadata to the record. Please note this script was originally envisaged to load data from Ensembl resources hence a number of Ensembl conventions are present. These should not affect your usage of the loader code.
@@ -97,6 +97,59 @@ perl -I lib ./bin/schema.pl
 ```
 
 When executed from the root directory, this will create a set of schemas located in the `schema` directory. Version of schemas are controlled by the `$Refget::Schema::VERSION` variable located in `lib/Refget/Schema.pm`.
+
+# Sequence Storage Layers
+
+Three types of sequences storage layers exist; File, DBIx and Redis. All storage layers require you to specify the checksum to use for indexing. A sequence storage layer can work with only one checksum and requires the metadata systems to normalise into this single key. Whilst DBIx is the simplest to configure both the file and Redis layers have some advantages such as scalability to numbers of sequences or speed of access. Ultimately it is up to the implementation to understand what is important and to use the appropriate storage layer.
+
+## File Storage
+
+File storage creates a htslib like `hts-ref` storage system, where a directory hierarchy is created. The first two levels are the first and second hex number from the generated HASH e.g. the sequence for `959cb1883fc1ca9ae1394ceb475a356ead1ecceff5824ae7` is held under `95/9c/959cb1883fc1ca9ae1394ceb475a356ead1ecceff5824ae7`.
+
+### Configuration
+
+```json
+{
+  "seq_store" : "File",
+  "seq_store_args" : {
+    "root_dir" : "/path/to/storage/area",
+    "checksum" : "trunc512"
+  }
+}
+```
+
+## DBIx
+
+DBIx storage uses the same database as where all loaded sequence metadata goes and pushes data into a table called `raw_seq`, which is indexed by the chosen checksum identifier. This is the simplest storage system to use as it keeps metadata and sequence together.
+
+### Configuration
+
+```json
+{
+  "seq_store" : "DBIx",
+  "seq_store_args" : {
+    "checksum" : "trunc512"
+  }
+}
+```
+
+## Redis
+
+Redis storage uses the Redis database to store and access data. The code uses Redis' `GETRANGE` function to retrieve sub-sequences. You configure the instance by passing through parameters meant for the [Perl Redis module](https://metacpan.org/pod/Redis).
+
+### Configuration
+
+```json
+{
+  "seq_store" : "Redis",
+  "seq_store_args" : {
+    "server" : "127.0.0.1:6379"
+  }
+}
+```
+## Supporting additional layers
+
+Additional layers can be supported. They require using the `Refget::SeqStore::Base` Moose role. This requires you to implement two methods `_store(self, checksum, sequence)` and `_sub_seq(self, checksum, start, length)`. Once created the new storage layer can be added to the list of allowed layers in `Refget::SeqStore::Builder`.
 
 # Future Developments
 

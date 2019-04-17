@@ -12,27 +12,31 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-package Refget::SeqStore::DBIx;
+package Refget::SeqStore::Redis;
 
 use Moose;
 use namespace::autoclean;
+use Redis;
 
 with 'Refget::SeqStore::Base';
 
-has 'schema' => (isa => 'Refget::Schema', is => 'ro', required => 1);
+# Pass redis_args with any options you would have given to the Redis module
+has 'redis' => (isa => 'Any', is => 'ro', required => 1, lazy => 1, builder => 'build_redis');
+has 'redis_args' => (isa => 'HashRef', is => 'ro', required => 1, default => sub { {} });
+
+sub build_redis {
+  my ($self) = @_;
+  return Redis->new(%{$self->redis_args()});
+}
 
 sub _store {
-  my ($self, $checksum, $sequence) = @_;
-  my $rs = $self->schema->resultset('RawSeq');
-  my $raw_seq = $rs->find_or_create({ checksum => $checksum, seq => $sequence });
-  return $raw_seq;
+	my ($self, $checksum, $sequence) = @_;
+  return $self->redis()->set($checksum, $sequence);
 }
 
 sub _sub_seq {
-  my ($self, $checksum, $start, $length) = @_;
-  my $subseq_rs = $self->schema->resultset('SubSeq');
-  my $rs = $subseq_rs->search( {}, { bind => [ $start, $length, $checksum ] } );
-  return $rs->next()->seq();
+	my ($self, $checksum, $start, $length) = @_;
+	return $self->redis()->getrange($checksum, $start, ($start+$length));
 }
 
 __PACKAGE__->meta->make_immutable;

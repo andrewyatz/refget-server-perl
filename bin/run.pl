@@ -20,15 +20,20 @@ use warnings;
 use Refget::Schema;
 use Refget::Fmt::Fasta;
 use Refget::Exe::Import;
-use Refget::SeqStore::File;
+use Refget::SeqStore::Builder;
+use Mojo::JSON qw/decode_json/;
+use Mojo::File qw/path/;
 
-my ($file, $release, $mol_type, $species, $division, $assembly, $root_dir, $commit_rate) = @ARGV;
+my ($file, $release, $mol_type, $species, $division, $assembly, $commit_rate, $config) = @ARGV;
 
 my @dbargs = Refget::Schema->generate_db_args();
 my $schema = Refget::Schema->connect(@dbargs);
 
+my $config_file = path($config);
+my $json = decode_json($config_file->slurp());
+
 my $fasta = Refget::Fmt::Fasta->new(file => $file, type => $mol_type);
-my $seq_store = Refget::SeqStore::File->new(root_dir => $root_dir);
+my $seq_store = Refget::SeqStore::Builder->build_from_config($json);
 my $import = Refget::Exe::Import->new(
   schema => $schema,
   seq_store => $seq_store,
@@ -37,7 +42,6 @@ my $import = Refget::Exe::Import->new(
   species => $species,
   division => $division,
   assembly => $assembly,
-  root_dir => $root_dir,
   commit_rate => $commit_rate,
 );
 

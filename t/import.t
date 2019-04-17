@@ -18,15 +18,18 @@ use warnings;
 use Test::More;
 use Test::File;
 use Test::Exception;
+use Test::Mock::Redis;
 use File::Basename qw/dirname/;
 use File::Spec;
 use File::Temp qw/tempdir/;
+use Mojo::Util qw/monkey_patch/;
 
 use Refget::Fmt::Fasta;
 use Refget::Exe::Import;
 use Refget::Exe::DefaultDicts;
 use Refget::SeqStore::File;
 use Refget::SeqStore::DBIx;
+use Refget::SeqStore::Redis;
 use Refget::SeqStore::Builder;
 
 use Test::DBIx::Class {
@@ -55,7 +58,7 @@ my $run_import = sub  {
 		species => $species,
 		division => $division,
 		assembly => $assembly,
-		verbose => 1,
+		verbose => 0,
 		# making sure we commit everything and have to clean-up a final commit
 		commit_rate => 2,
 	);
@@ -85,6 +88,7 @@ my $root_dir = tempdir(TMPDIR => 1, CLEANUP => 1);
 
 # Testing the file based storage system
 {
+	note 'Testing file based storage';
 	my $seq_store = Refget::SeqStore::File->new(root_dir => $root_dir);
 	$run_import->($seq_store);
 
@@ -108,6 +112,7 @@ reset_schema;
 
 # Testing the database based storage system
 {
+	note 'Testing database storage';
 	my $seq_store = Refget::SeqStore::DBIx->new(schema => Schema);
 	$run_import->($seq_store);
 	my $seqs_count = RawSeq->count({});
@@ -117,6 +122,33 @@ reset_schema;
 		my $raw_seq = RawSeq->find($hash->{trunc512});
 		ok(defined $raw_seq, "Found a row for ".$hash->{trunc512});
 		like($raw_seq->seq(), $hash->{content}, "${seq_name} content is as expected ".$hash->{content});
+	}
+
+	# Test subseq retrieval
+	$test_subseq->($seq_store);
+}
+
+reset_schema;
+
+# Testing the redis based storage system
+{
+	note 'Testing redis storage';
+	# Mock redis does not support getrange. This does
+	no warnings 'once';
+	monkey_patch 'Test::Mock::Redis', getrange => sub {
+		my ($self, $key, $start, $end) = @_;
+		return substr($self->_stash->{$key}, $start, ($end-$start));
+	};
+	my $redis = Test::Mock::Redis->new(server => 'mock');
+	my $seq_store = Refget::SeqStore::Redis->new(redis => $redis);
+	$run_import->($seq_store);
+	my $seqs = $redis->keys('*');
+	is($seqs, 3, 'Checking we have three keys in the redis store');
+	foreach my $seq_name (sort keys %{$lookup}) {
+		my $hash = $lookup->{$seq_name};
+		my $raw_seq = $redis->get($hash->{trunc512});
+		ok(defined $raw_seq, "Found an entry for ".$hash->{trunc512});
+		like($raw_seq, $hash->{content}, "${seq_name} content is as expected ".$hash->{content});
 	}
 
 	# Test subseq retrieval

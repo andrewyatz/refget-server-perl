@@ -27,9 +27,9 @@ has 'skip_if_found' => (isa => 'Bool', is => 'ro', required => 1, default => 1);
 has 'file_mode' => ( isa => 'Str', is => 'ro', required => 1, default => '0644');
 
 # Store a sequence
-sub store {
-  my ($self, $seq_obj, $sequence) = @_;
-  my $path = $self->_create_path($seq_obj);
+sub _store {
+  my ($self, $checksum, $sequence) = @_;
+  my $path = $self->_create_path($checksum);
   if(-f $path) {
     return $path if $self->skip_if_found();
     confess "Cannot continue to import. Path already exists at '${path}'";
@@ -47,8 +47,8 @@ sub store {
 }
 
 sub _sub_seq {
-  my ($self, $start, $length, $seq_obj) = @_;
-  my $path = $self->_create_path($seq_obj);
+  my ($self, $checksum, $start, $length) = @_;
+  my $path = $self->_create_path($checksum);
   open my $fh, '<', $path or confess "Cannot open '${path}' for reading: $!";
   seek($fh, $start, 0) or confess "Cannot seek to position ${start} in file '${path}': $!";
   my $sequence = q{};
@@ -58,9 +58,7 @@ sub _sub_seq {
 }
 
 sub _create_path {
-  my ($self, $seq_obj) = @_;
-  my $checksum_type = $self->checksum();
-  my $checksum = $self->get_checksum_from_seq($seq_obj);
+  my ($self, $checksum) = @_;
   my ($part_one, $part_two) = (substr($checksum, 0, 2), substr($checksum, 2, 2));
   return File::Spec->catfile($self->root_dir(), $part_one, $part_two, $checksum);
 }
