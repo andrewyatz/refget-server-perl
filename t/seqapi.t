@@ -21,13 +21,13 @@ use IO::Compress::Gzip 'gzip';
 use Mojo::JSON;
 
 use Test::DBIx::Class {
-  schema_class => 'Fastadb::Schema',
-  resultsets => [ qw/SubSeq Seq MolType Release Molecule Division Species Synonym/ ],
+  schema_class => 'Refget::Schema',
+  resultsets => [ qw/Seq MolType Release Molecule Division Species Synonym/ ],
 };
 use Test::Mojo;
 
-isa_ok Schema, 'Fastadb::Schema'=> 'Got Correct Schema';
-isa_ok ResultSet('Seq'), 'Fastadb::Schema::ResultSet::Seq'=> 'Got the right Seq';
+isa_ok Schema, 'Refget::Schema'=> 'Got Correct Schema';
+isa_ok ResultSet('Seq'), 'Refget::Schema::ResultSet::Seq'=> 'Got the right Seq';
 
 my ($mol_type, $division, $species, $release);
 fixtures_ok sub {
@@ -40,21 +40,18 @@ fixtures_ok sub {
 my $raw_seq_one = 'MFSELINFQNEGHECQCQCGSCKNNEQCQKSCSCPTGCNSDDKCPCGNKSEETKKSCCSGK';
 fixtures_ok sub {
   my $seq = Seq->create({
-    seq => $raw_seq_one,
     md5 => 'b6517aa110cc10776af5c368c5342f95',
     trunc512 => '0f1c17124a6adb8543a30e86bc2191cb1a16bc2931a56ba8',
     # vmcdigest => 'VMC:GS_DxwXEkpq24VDow6GvCGRyxoWvCkxpWuo',
     size => 61,
   });
   my $seq2 = Seq->create({
-    seq => 'MSSPTPPGGQRTLQKRKQGSSQKVAASAPKKNTNSNNSILKIYSDEATGLRVDPLVVLFLAVGFIFSVVALHVISKVAGKLF',
     md5 => 'c8e76de5f86131da26e8dd163658290d',
     trunc512 => '3ee63c430df30d169a3c79f81158abcf6629599c655dc6d8',
     # vmcdigest => 'VMC:GS_PuY8Qw3zDRaaPHn4EVirz2YpWZxlXcbY',
     size => 82,
   });
   my $seq3 = Seq->create({
-    seq => 'ABCDEFGH',
     md5 => '4783e784b4fa2fba9e4d6502dbc64f8f',
     trunc512 => '8b66b893918da31d49763a6c420b4cad75a2663682bb317d',
     size => 8,
@@ -88,9 +85,11 @@ fixtures_ok sub {
 
 # Set the application with the right schema. SQLite memory databases are a per driver thing
 $ENV{APP_ENABLE_COMPRESSION} = 1;
-my $t = Test::Mojo->new('Fastadb::App');
+my $t = Test::Mojo->new(
+  'Refget::App',
+  { root_dir => './t/hts-ref', seq_checksum => 'trunc512' }
+);
 $t->app->schema(Schema);
-
 
 # Disable GZipping content unless boolean says otherwise. Mojo does this automatically during requests
 my $disable_gzip_accept_encoding = 1;
@@ -119,7 +118,7 @@ $t->get_ok('/sequence/service-info', { Accept => 'application/json'})
 
 my $md5 = 'b6517aa110cc10776af5c368c5342f95';
 my $seq_obj = Seq->get_seq($md5, 'md5');
-my $raw_seq = $seq_obj->get_seq(SubSeq);
+my $raw_seq = $t->app->seq_fetcher()->get_seq($seq_obj);
 is($raw_seq, $raw_seq_one, 'Making sure sequence from API matches expected');
 
 # Being used for the next 5 or so tests
@@ -324,5 +323,20 @@ my $metadata_sub = sub {
 
 $metadata_sub->('YER087C-B', [{ alias => 'synonym', naming_authority => 'unknown' }]);
 $metadata_sub->('YHR055C');
+
+# Test the md5/alternative checksum lookup system can also be used
+{
+  my $t_md5 = Test::Mojo->new(
+    'Refget::App',
+    { root_dir => './t/md5-hts-ref', seq_checksum => 'md5' }
+  );
+  $t_md5->app->schema(Schema);
+  foreach my $m (qw/md5 trunc512/) {
+    my $checksum = $seq_obj->$m(); #meta method call for digest
+    $t_md5->get_ok('/sequence/'.$checksum => { Accept => 'text/plain'})
+      ->status_is(200, 'Testing HTTP status code for '.$m)
+      ->content_is($raw_seq, "Checking the retrieved sequence from md5 storage is as expected for checksum ${m}");
+  }
+}
 
 done_testing();

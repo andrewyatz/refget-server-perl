@@ -1,5 +1,3 @@
-#!/usr/bin/env perl
-
 # See the NOTICE file distributed with this work for additional information
 # regarding copyright ownership.
 #
@@ -14,13 +12,28 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+package Refget::App::Controller::Service;
 
-use Refget::Schema;
-# my $dsn = 'dbi:SQLite:test.db';
-my $schema = Refget::Schema->connect($dsn);
-$schema->create_ddl_dir([qw/MySQL SQLite PostgreSQL/], $Refget::Schema::VERSION, './schema/');
-#  $schema->create_ddl_dir(['MySQL', 'SQLite', 'PostgreSQL'],
-#                          '0.4',
-#                          './schemas/',
-#                          '0.3'
-#                          );
+use Mojo::Base 'Mojolicious::Controller';
+use Mojo::JSON qw/true/;
+use Refget::Util qw/available_algorithms/;
+
+sub ping {
+	my ($self) = @_;
+	$self->render(text => "Ping");
+}
+
+sub service {
+	my ($self) = @_;
+  $self->respond_to(
+    json => { json => {service => {
+      supported_api_versions => ['0.2'],
+      circular_supported => true(),
+      subsequence_limit => undef,
+      algorithms => [sort {$a cmp $b} available_algorithms()],
+    }}},
+    any  => {data => 'Not Acceptable', status => 406}
+  );
+}
+
+1;

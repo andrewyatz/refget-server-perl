@@ -1,5 +1,3 @@
-#!/usr/bin/env perl
-
 # See the NOTICE file distributed with this work for additional information
 # regarding copyright ownership.
 #
@@ -14,13 +12,27 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+package Refget::Schema::Result::RawSeq;
 
-use Refget::Schema;
-# my $dsn = 'dbi:SQLite:test.db';
-my $schema = Refget::Schema->connect($dsn);
-$schema->create_ddl_dir([qw/MySQL SQLite PostgreSQL/], $Refget::Schema::VERSION, './schema/');
-#  $schema->create_ddl_dir(['MySQL', 'SQLite', 'PostgreSQL'],
-#                          '0.4',
-#                          './schemas/',
-#                          '0.3'
-#                          );
+use strict;
+use warnings;
+
+use base 'DBIx::Class::Core';
+use Class::Method::Modifiers;
+
+__PACKAGE__->table('raw_seq');
+__PACKAGE__->add_columns(
+  checksum =>{
+    data_type => 'char',
+		size      => 48,
+		is_nullable => 0,
+	},
+	seq =>{
+		data_type => 'text',
+		is_nullable => 0,
+	}
+);
+
+__PACKAGE__->set_primary_key('checksum');
+
+1;

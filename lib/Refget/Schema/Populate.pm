@@ -1,5 +1,3 @@
-#!/usr/bin/env perl
-
 # See the NOTICE file distributed with this work for additional information
 # regarding copyright ownership.
 #
@@ -14,13 +12,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+package Refget::Schema::Populate;
 
-use Refget::Schema;
-# my $dsn = 'dbi:SQLite:test.db';
-my $schema = Refget::Schema->connect($dsn);
-$schema->create_ddl_dir([qw/MySQL SQLite PostgreSQL/], $Refget::Schema::VERSION, './schema/');
-#  $schema->create_ddl_dir(['MySQL', 'SQLite', 'PostgreSQL'],
-#                          '0.4',
-#                          './schemas/',
-#                          '0.3'
-#                          );
+use strict;
+use warnings;
+
+sub populate {
+  my ($self) = @_;
+
+}
+
+1;

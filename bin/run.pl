@@ -17,23 +17,28 @@
 
 use strict;
 use warnings;
-use Fastadb::Schema;
-use Fastadb::Fmt::Fasta;
-use Fastadb::Exe::Import;
+use Refget::Schema;
+use Refget::Fmt::Fasta;
+use Refget::Exe::Import;
+use Refget::SeqStore::File;
 
-my ($file, $release, $mol_type, $species, $division, $assembly) = @ARGV;
+my ($file, $release, $mol_type, $species, $division, $assembly, $root_dir, $commit_rate) = @ARGV;
 
-my @dbargs = Fastadb::Schema->generate_db_args();
-my $schema = Fastadb::Schema->connect(@dbargs);
+my @dbargs = Refget::Schema->generate_db_args();
+my $schema = Refget::Schema->connect(@dbargs);
 
-my $fasta = Fastadb::Fmt::Fasta->new(file => $file, type => $mol_type);
-my $import = Fastadb::Exe::Import->new(
+my $fasta = Refget::Fmt::Fasta->new(file => $file, type => $mol_type);
+my $seq_store = Refget::SeqStore::File->new(root_dir => $root_dir);
+my $import = Refget::Exe::Import->new(
   schema => $schema,
+  seq_store => $seq_store,
   fasta => $fasta,
   release => $release,
   species => $species,
   division => $division,
   assembly => $assembly,
+  root_dir => $root_dir,
+  commit_rate => $commit_rate,
 );
 
 $import->run();

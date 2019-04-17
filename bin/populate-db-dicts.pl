@@ -18,13 +18,13 @@
 use strict;
 use warnings;
 
-use Fastadb::Schema;
-use Fastadb::Exe::DefaultDicts;
+use Refget::Schema;
+use Refget::Exe::DefaultDicts;
 
-my @dbargs = Fastadb::Schema->generate_db_args();
-my $schema = Fastadb::Schema->connect(@dbargs);
+my @dbargs = Refget::Schema->generate_db_args();
+my $schema = Refget::Schema->connect(@dbargs);
 
-my $dicts = Fastadb::Exe::DefaultDicts->new(schema => $schema);
+my $dicts = Refget::Exe::DefaultDicts->new(schema => $schema);
 print "Creating default dict entries\n";
 $dicts->run();
 print "Done\n";

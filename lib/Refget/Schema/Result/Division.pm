@@ -1,5 +1,3 @@
-#!/usr/bin/env perl
-
 # See the NOTICE file distributed with this work for additional information
 # regarding copyright ownership.
 #
@@ -14,13 +12,36 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+package Refget::Schema::Result::Division;
 
-use Refget::Schema;
-# my $dsn = 'dbi:SQLite:test.db';
-my $schema = Refget::Schema->connect($dsn);
-$schema->create_ddl_dir([qw/MySQL SQLite PostgreSQL/], $Refget::Schema::VERSION, './schema/');
-#  $schema->create_ddl_dir(['MySQL', 'SQLite', 'PostgreSQL'],
-#                          '0.4',
-#                          './schemas/',
-#                          '0.3'
-#                          );
+use strict;
+use warnings;
+
+use base 'DBIx::Class::Core';
+use Class::Method::Modifiers;
+
+__PACKAGE__->table('division');
+
+__PACKAGE__->add_columns(
+	division_id =>{
+		accessor  => 'division',
+		data_type => 'integer',
+		size      => 16,
+		is_nullable => 0,
+		is_auto_increment => 1,
+		is_numeric => 1,
+	},
+	division =>{
+		data_type => 'varchar',
+		size      => 256,
+		is_nullable => 0,
+	},
+);
+
+__PACKAGE__->add_unique_constraint(division_uniq => [qw/division/]);
+
+__PACKAGE__->set_primary_key('division_id');
+
+__PACKAGE__->has_many(release => 'Refget::Schema::Result::Release', 'division_id');
+
+1;

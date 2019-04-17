@@ -23,4 +23,5 @@ on 'test' => sub {
   requires 'Test::DBIx::Class';
   requires 'IO::Scalar';
   requires 'Test::Differences';
+  requires 'Test::File';
 };

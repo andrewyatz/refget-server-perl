@@ -1,5 +1,3 @@
-#!/usr/bin/env perl
-
 # See the NOTICE file distributed with this work for additional information
 # regarding copyright ownership.
 #
@@ -14,13 +12,30 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+package Refget::App::Controller::Batchseq;
 
-use Refget::Schema;
-# my $dsn = 'dbi:SQLite:test.db';
-my $schema = Refget::Schema->connect($dsn);
-$schema->create_ddl_dir([qw/MySQL SQLite PostgreSQL/], $Refget::Schema::VERSION, './schema/');
-#  $schema->create_ddl_dir(['MySQL', 'SQLite', 'PostgreSQL'],
-#                          '0.4',
-#                          './schemas/',
-#                          '0.3'
-#                          );
+use Mojo::Base 'Mojolicious::Controller';
+
+sub batch {
+	my ($self) = @_;
+	my $ids = $self->every_param('id');
+
+  my @results;
+  foreach my $id (@{$ids}) {
+    my $r = { id => $id, found => 0 };
+    my $seq = $self->db()->resultset('Seq')->get_seq($id);
+    if($seq) {
+      $r->{found} = 1;
+      $r->{trunc512} = $seq->trunc512();
+      $r->{seq} = $self->seq_fetcher->get_seq($seq);
+    }
+    push(@results, $r);
+  }
+
+  $self->respond_to(
+    json => { json => \@results },
+    any => { data => 'Not Acceptable', status => 406 }
+  );
+}
+
+1;

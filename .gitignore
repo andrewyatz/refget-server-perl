@@ -4,3 +4,7 @@
 /*.fa.gz
 .vscode/settings.json
 .env
+/new-hts-ref
+/hts-ref
+/compliance-data
+/cover_db

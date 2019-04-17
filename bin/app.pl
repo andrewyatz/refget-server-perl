@@ -30,4 +30,4 @@ Please visit http://mojolicio.us for detailed installation instructions.
 EOF
 
 # Start commands
-Mojolicious::Commands->start_app('Fastadb::App');
+Mojolicious::Commands->start_app('Refget::App');

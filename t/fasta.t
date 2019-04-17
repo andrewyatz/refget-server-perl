@@ -21,12 +21,12 @@ use IO::Scalar;
 use File::Basename qw/dirname/;
 use File::Spec;
 
-use Fastadb::Fmt::Fasta;
+use Refget::Fmt::Fasta;
 
 my $expected = [
-  { id => 'seq1', additional => q{test additional data}, sequence => 'ACCCGGTTGGGCCCCGGGTTTGGCNACCCGGTTGGGCCCCGGG', type => 'dna'},
-  { id => 'seq2', additional => q{}, sequence => 'ACGTACGT', type => 'dna'},
-  { id => 'seq3', additional => q{}, sequence => 'A', type => 'dna'},
+  { id => 'seq1', additional => q{test additional data}, sequence => 'ACCCGGTTGGGCCCCGGGTTTGGCNACCCGGTTGGGCCCCGGG', type => 'dna', circular => 0},
+  { id => 'seq2', additional => q{}, sequence => 'ACGTACGT', type => 'dna', circular => 0},
+  { id => 'seq3', additional => q{}, sequence => 'A', type => 'dna', circular => 0},
 ];
 
 my $test_data_dir = File::Spec->catdir(File::Spec->rel2abs(dirname(__FILE__)), 'data');
@@ -49,17 +49,17 @@ ACGT
 A
 };
   my $fasta_io = IO::Scalar->new(\$fasta);
-  my $fasta_iter = Fastadb::Fmt::Fasta->new(fh => $fasta_io, type => 'dna');
+  my $fasta_iter = Refget::Fmt::Fasta->new(fh => $fasta_io, type => 'dna');
   test_fasta($fasta_iter, 'In-memory open filehandle');
 }
 
 sub filename {
-  my $fasta_iter = Fastadb::Fmt::Fasta->new(file => File::Spec->catfile($test_data_dir, 'test.fa'), type => 'dna');
+  my $fasta_iter = Refget::Fmt::Fasta->new(file => File::Spec->catfile($test_data_dir, 'test.fa'), type => 'dna');
   test_fasta($fasta_iter, 'Filename uncompressed');
 }
 
 sub filename_compressed {
-  my $fasta_iter = Fastadb::Fmt::Fasta->new(file => File::Spec->catfile($test_data_dir, 'test.fa.gz'), type => 'dna');
+  my $fasta_iter = Refget::Fmt::Fasta->new(file => File::Spec->catfile($test_data_dir, 'test.fa.gz'), type => 'dna');
   test_fasta($fasta_iter, 'GZipped filename');
 }
 
