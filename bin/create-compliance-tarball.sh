@@ -32,7 +32,7 @@ echo '====> LOAD COMPLIANCE DATA'
 perl -I lib ./bin/run.pl compliance/refget-compliance.fa 1 dna none none none 1 $PWD/compliance/config.json
 
 echo '====> PATCH COMPLIANCE DATA'
-sqlite3 $DATABASE_LOC < $PWD/compliance/data.sqlite3.patch
+sqlite3 $DATABASE_LOC < $PWD/compliance/data.sqlite3.sql
 
 # Tarball
 echo '====> BUILD TARBALL COMPLIANCE'
