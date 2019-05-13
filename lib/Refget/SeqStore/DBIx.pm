@@ -30,6 +30,7 @@ sub _store {
 
 sub _sub_seq {
   my ($self, $checksum, $start, $length) = @_;
+  return q{} if $length == 0; # return a blank string if we were asked for a 0 length string
   my $subseq_rs = $self->schema->resultset('SubSeq');
   my $rs = $subseq_rs->search( {}, { bind => [ $start, $length, $checksum ] } );
   return $rs->next()->seq();

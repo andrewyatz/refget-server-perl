@@ -36,6 +36,7 @@ sub _store {
 
 sub _sub_seq {
 	my ($self, $checksum, $start, $length) = @_;
+  return q{} if $length == 0; # return a blank string if we were asked for a 0 length string
 	return $self->redis()->getrange($checksum, $start, ($start+$length));
 }
 

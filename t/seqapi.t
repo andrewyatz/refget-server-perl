@@ -184,6 +184,9 @@ $t->get_ok("/sequence/${circ_digest}?start=0&end=1", => {Accept => 'text/plain' 
   ->content_is('A');
 $t->get_ok("/sequence/${md5}?start=6&end=3", => {Accept => 'text/plain' })
   ->status_is(416, 'Cannot request circular from a non-circular sequence');
+$t->get_ok("/sequence/${circ_digest}?start=7&end=0", => {Accept => 'text/plain' })
+  ->status_is(200, 'Successful circular request')
+  ->content_is('H');
 
 # Substring with start but no end
 $t->get_ok("/sequence/${md5}?start=58" => { Accept => 'text/plain' })

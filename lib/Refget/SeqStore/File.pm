@@ -48,6 +48,7 @@ sub _store {
 
 sub _sub_seq {
   my ($self, $checksum, $start, $length) = @_;
+  return q{} if $length == 0; # return a blank string if we were asked for a 0 length string
   my $path = $self->_create_path($checksum);
   open my $fh, '<', $path or confess "Cannot open '${path}' for reading: $!";
   seek($fh, $start, 0) or confess "Cannot seek to position ${start} in file '${path}': $!";
