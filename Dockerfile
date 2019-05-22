@@ -15,28 +15,29 @@ ENV APP_DIR=/app
 ADD ./lib ${APP_DIR}/lib
 ADD ./bin ${APP_DIR}/bin
 ADD ./templates ${APP_DIR}/templates
+# Add does auto extraction of tarballs FTW
+ADD ./compliance-data.tar.gz ${APP_DIR}
+ADD ./.heroku/refget-app.heroku.json.template ${APP_DIR}/refget-app.docker.json
 
-RUN chmod +x $APP_DIR/bin/*.pl; \
+RUN chmod ugo-x $APP_DIR/bin/*; \
+    chmod +x $APP_DIR/bin/app.pl; \
     mkdir -p $APP_DIR/log $APP_DIR/tmp; \
     addgroup -S mydocker; \
     adduser -S -g mydocker mydocker ; \
     rm -f $APP_DIR/log/* $APP_DIR/tmp/*;
 
-RUN chgrp -R 0 /home/mydocker $APP_DIR/log $APP_DIR/tmp && \
+RUN chown -R mydocker /home/mydocker $APP_DIR/log $APP_DIR/tmp && \
     chmod -R g=u /home/mydocker $APP_DIR/log $APP_DIR/tmp
 
 USER mydocker
-
-RUN tar zxf compliance-data.tar.gz
-COPY .heroku/refget-app.heroku.json.template $APP_DIR/refget-app.docker.json
 
 EXPOSE 8080
 WORKDIR $APP_DIR
 
 ENV APP_PID_FILE=${APP_DIR}/tmp/hypnotoad.pid
 ENV PERL5LIB=${APP_DIR}/lib:${PERL5LIB}
-ENV MOJO_CONFIG=${APP_DIR}/refget-app.docker.json 
-ENV DATABASE_URL=sqlite:///${APP_DIR}/compliance-data/compliance.db 
+ENV MOJO_CONFIG=${APP_DIR}/refget-app.docker.json
+ENV DATABASE_URL=sqlite:///${APP_DIR}/compliance-data/compliance.db
 
 # ENV APP_ACCESS_LOG_FILE=${APP_DIR}/log/access.log
 
