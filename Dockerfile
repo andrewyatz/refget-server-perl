@@ -1,4 +1,4 @@
-FROM alpine:3.4
+FROM alpine:3.9
 LABEL maintainer="ayates"
 
 COPY cpanfile /
