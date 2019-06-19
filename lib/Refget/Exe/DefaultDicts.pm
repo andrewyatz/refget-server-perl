@@ -22,12 +22,14 @@ use Moose;
 has 'schema'    => ( isa => 'Refget::Schema', is => 'ro', required => 1 );
 has 'divisions' => ( isa => 'ArrayRef[Str]', is => 'ro', builder => 'build_default_divisions' );
 has 'mol_types' => ( isa => 'ArrayRef[Str]', is => 'ro', builder => 'build_default_mol_types' );
+has 'sources'   => ( isa => 'ArrayRef[Str]', is => 'ro', builder => 'build_default_sources' );
 
 sub run {
   my($self) = @_;
   my $return = {};
   $return->{divisions} = $self->populate_dict('Division', $self->divisions());
   $return->{mol_type} =$self->populate_dict('MolType', $self->mol_types());
+  $return->{sources} =$self->populate_dict('Source', $self->sources());
   return $return;
 }
 
@@ -52,6 +54,17 @@ sub build_default_mol_types {
     cdna
     ncrna
     dna
+  /];
+}
+
+sub build_default_sources {
+  my ($self) = @_;
+  return [qw/
+    Ensembl
+    INSDC
+    UCSC
+    RefSeq
+    unknown
   /];
 }
 

@@ -28,6 +28,7 @@ has 'species'     => ( isa => 'Str', is => 'ro', required => 1 );
 has 'division'    => ( isa => 'Str', is => 'ro', required => 1 );
 has 'release'     => ( isa => 'Int', is => 'ro', required => 1 );
 has 'assembly'    => ( isa => 'Str', is => 'ro', required => 1 );
+has 'source'      => ( isa => 'Str', is => 'ro', required => 1, default => 'unknown' );
 has 'commit_rate' => ( isa => 'Int', is => 'ro', required => 1, default => 1 );
 has 'verbose'     => ( isa => 'Bool', is => 'ro', required => 1, default => 1 );
 
@@ -35,16 +36,20 @@ sub run {
   my ($self) = @_;
   my $fasta = $self->fasta();
   my $seq_store = $self->seq_store();
-  my ($species, $division, $release, $mol_type);
+  my ($species, $division, $release, $mol_type, $source);
 
   $self->schema->txn_do(sub {
     $species = $self->schema->resultset('Species')->create_entry($self->species(), $self->assembly());
     $division = $self->schema->resultset('Division')->create_entry($self->division());
     $release = $self->schema->resultset('Release')->create_entry($self->release(), $division, $species);
     $mol_type = $self->schema->resultset('MolType')->find_entry($self->fasta()->type());
+    $source = $self->schema->resultset('Source')->find_entry($self->source());
   });
   if(! defined $mol_type) {
     confess('No molecule_type in the database found for '.$self->fasta()->type());
+  }
+  if(! defined $source) {
+    confess('No source in the database found for '.$self->source());
   }
 
   my $rs = $self->schema->resultset('Seq');
@@ -54,7 +59,7 @@ sub run {
   my $verbose = $self->verbose();
   while(my $seq = $fasta->iterate()) {
     printf("Processing sequence %s ... ", $seq->{id}) if $verbose;
-    my $seq_obj = $rs->create_seq($seq, $mol_type, $release);
+    my $seq_obj = $rs->create_seq($seq, $mol_type, $release, $source);
     $seq_store->store($seq_obj->seq(), $seq->{sequence});
     print("done\n")if $verbose;
     $count++;

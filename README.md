@@ -80,12 +80,13 @@ To load sequences into a database you can use the `bin/run.pl` script. The argum
 4. Species. Give a species name
 5. A division name. If unsure set to `none`
 6. Assembly name. Normally set to the default name for an assembly. If one does not exist set it to `none`
-7. A commit rate (how many times we should commit on our inserts)
-8. A path to the config file. Used to create an appropriate sequence storage layer
+7. Source. Set to the source input of your sequence (Ensembl, RefSeq, UCSC, INSDC, unknown)
+8. A commit rate (how many times we should commit on our inserts)
+9. A path to the config file. Used to create an appropriate sequence storage layer
 
 ```bash
 export DATABASE_URL=postgres://username:password@server:port/databasename
-perl -I lib ./bin/run.pl fasta.file 96 dna homo_sapiens none grch37 1000 path/to/config.json
+perl -I lib ./bin/run.pl fasta.file 96 dna homo_sapiens none grch37 Ensembl 1000 path/to/config.json
 ```
 
 The script will iterate through the file, loads sequences if it were not already in the database and links additional metadata to the record. Please note this script was originally envisaged to load data from Ensembl resources hence a number of Ensembl conventions are present. These should not affect your usage of the loader code.

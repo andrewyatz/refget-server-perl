@@ -22,19 +22,21 @@ use Mojo::JSON;
 
 use Test::DBIx::Class {
   schema_class => 'Refget::Schema',
-  resultsets => [ qw/Seq MolType Release Molecule Division Species Synonym/ ],
+  resultsets => [ qw/Seq MolType Release Molecule Division Species Synonym Source/ ],
 };
 use Test::Mojo;
 
 isa_ok Schema, 'Refget::Schema'=> 'Got Correct Schema';
 isa_ok ResultSet('Seq'), 'Refget::Schema::ResultSet::Seq'=> 'Got the right Seq';
 
-my ($mol_type, $division, $species, $release);
+my ($mol_type, $division, $species, $release, $source, $ensembl_source);
 fixtures_ok sub {
 	$mol_type = MolType->create({type => 'protein'});
 	$division = Division->create({division => 'ensembl'});
 	$species = Species->create({species => 'yeast', assembly => 'R64-1-1'});
 	$release = Release->create({release => 91, species => $species, division => $division});
+  $source = Source->create({source => 'unknown'});
+  $ensembl_source = Source->create({source => 'Ensembl'});
 };
 
 my $raw_seq_one = 'MFSELINFQNEGHECQCQCGSCKNNEQCQKSCSCPTGCNSDDKCPCGNKSEETKKSCCSGK';
@@ -57,6 +59,12 @@ fixtures_ok sub {
     size => 8,
     circular => 1
   });
+  my $seq4 = Seq->create({
+    md5 => ('0'x32),
+    trunc512 => ('0'x 48),
+    size => 0,
+    circular => 0
+  });
 
   Molecule->create({
     id => 'YHR055C',
@@ -64,6 +72,7 @@ fixtures_ok sub {
     seq => $seq,
     release => $release,
     mol_type => $mol_type,
+    source => $source,
   });
   Molecule->create({
     id => 'YER087C-B',
@@ -71,7 +80,8 @@ fixtures_ok sub {
     seq => $seq2,
     release => $release,
     mol_type => $mol_type,
-    synonyms => [ { synonym => 'synonym'} ],
+    source => $source,
+    synonyms => [ { synonym => 'synonym', source => $source } ],
   });
   Molecule->create({
     id => 'Circ',
@@ -79,6 +89,25 @@ fixtures_ok sub {
     seq => $seq3,
     release => $release,
     mol_type => $mol_type,
+    source => $source,
+  });
+
+  Molecule->create({
+    id => 'Shared',
+    first_seen => 1,
+    seq => $seq4,
+    release => $release,
+    mol_type => $mol_type,
+    source => $source,
+  });
+  Molecule->create({
+    id => 'Shared2',
+    first_seen => 0,
+    seq => $seq4,
+    release => $release,
+    mol_type => $mol_type,
+    source => $source,
+    synonyms => [ { synonym => 'synonym', source => $ensembl_source } ],
   });
 
 },'Installed fixtures';
@@ -326,6 +355,29 @@ my $metadata_sub = sub {
 
 $metadata_sub->('YER087C-B', [{ alias => 'synonym', naming_authority => 'unknown' }]);
 $metadata_sub->('YHR055C');
+
+{
+  # More metadata checks because we have a number of alternative molecules attached to a single identifier
+  my $checksum = '0'x32;
+  my $trunc512_checksum = '0'x48;
+  my $expected_json = {
+    metadata => {
+      md5 => $checksum,
+      trunc512 => $trunc512_checksum,
+      length => 0,
+      aliases => [
+        { alias => 'VMC:GS_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA', naming_authority => 'vmc'},
+        { alias => 'Shared', naming_authority => 'unknown' },
+        { alias => 'Shared2', naming_authority => 'unknown' },
+        { alias => 'synonym', naming_authority => 'Ensembl' },
+      ]
+    }
+  };
+  $t->get_ok("/sequence/${checksum}/metadata" => { Accept => 'application/json' })
+    ->status_is(200, 'Correct response when looking up '.$checksum)
+    ->json_is($expected_json)
+    ->or(sub { diag explain $t->tx->res->json; diag explain $expected_json});
+}
 
 # Test the md5/alternative checksum lookup system can also be used
 {

@@ -59,6 +59,7 @@ my $run_import = sub  {
 		division => $division,
 		assembly => $assembly,
 		verbose => 0,
+		source => 'unknown',
 		# making sure we commit everything and have to clean-up a final commit
 		commit_rate => 2,
 	);

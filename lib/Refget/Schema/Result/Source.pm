@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-package Refget::Schema::Result::Synonym;
+package Refget::Schema::Result::Source;
 
 use strict;
 use warnings;
@@ -20,42 +20,30 @@ use warnings;
 use base 'DBIx::Class::Core';
 use Class::Method::Modifiers;
 
-__PACKAGE__->table('synonym');
+__PACKAGE__->table('source');
 
 __PACKAGE__->add_columns(
-	synonym_id =>{
-		accessor  => 'synonym',
+	source_id =>{
+		accessor  => 'source',
 		data_type => 'integer',
 		size      => 16,
 		is_nullable => 0,
 		is_auto_increment => 1,
 		is_numeric => 1,
 	},
-	molecule_id =>{
-		data_type => 'integer',
-		size      => 16,
-		is_nullable => 0,
-		is_numeric => 1,
-	},
-	source_id =>{
-		data_type => 'integer',
-		size      => 16,
-		is_nullable => 0,
-		is_numeric => 1,
-	},
-	synonym =>{
+	source =>{
 		data_type => 'varchar',
 		size      => 256,
 		is_nullable => 0,
 	},
 );
 
-__PACKAGE__->add_unique_constraint(synonym_uniq => [qw/molecule_id synonym/]);
+__PACKAGE__->add_unique_constraint(source_uniq => [qw/source/]);
 
-__PACKAGE__->set_primary_key('synonym_id');
+__PACKAGE__->set_primary_key('source_id');
 
-__PACKAGE__->belongs_to(molecule => 'Refget::Schema::Result::Molecule', 'molecule_id');
+__PACKAGE__->has_many(seqs => 'Refget::Schema::Result::Molecule', 'source_id');
 
-__PACKAGE__->belongs_to(source => 'Refget::Schema::Result::Source', 'source_id');
+__PACKAGE__->has_many(seqs => 'Refget::Schema::Result::Synonym', 'source_id');
 
 1;

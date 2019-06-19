@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-package Refget::Schema::ResultSet::Seq;
+package Refget::Schema::ResultSet::Molecule;
 
 use strict;
 use warnings;
@@ -21,35 +21,8 @@ use base qw/DBIx::Class::ResultSet/;
 use Refget::Util qw/trunc512_digest vmc_to_trunc512 detect_algorithm allowed_algorithm/;
 use Digest::MD5 qw/md5_hex/;
 
-sub create_seq {
-  my ($self, $seq_hash, $molecule_type_obj, $release_obj, $source_obj) = @_;
-  my $hash = trunc512_digest($seq_hash->{sequence});
-  my $md5 = md5_hex($seq_hash->{sequence});
-  my $length = length($seq_hash->{sequence});
-  my $is_circular = $seq_hash->{circular};
-  my $seq_obj = $self->find_or_new(
-    {md5 => $md5, size => $length, trunc512 => $hash, circular => $is_circular},
-    {key => 'seq_trunc512_uniq'}
-  );
-  my $first_seen = 0;
-  if(!$seq_obj->in_storage()) {
-    $first_seen = 1;
-    $seq_obj->insert();
-  }
-  my $molecule_obj = $seq_obj->find_or_create_related(
-    'molecules',
-    {
-      id => $seq_hash->{id},
-      first_seen => $first_seen,
-      release => $release_obj,
-      mol_type => $molecule_type_obj,
-      source => $source_obj,
-    }
-  );
-  return $molecule_obj;
-}
-
-sub get_seq {
+# get a result set which represents all known molecules for the given sequence checksum identifier
+sub get_molecules {
   my ($self, $id, $checksum_algorithm) = @_;
   $checksum_algorithm //= detect_algorithm($id);
   #Convert from VMC to trunc512 if required
@@ -59,11 +32,20 @@ sub get_seq {
   }
   return undef unless allowed_algorithm($checksum_algorithm);
   my $options = {
-    prefetch => [{  'molecules' => ['source', {synonyms => 'source'}] }],
-    order_by => [ 'molecules.id' ]
+    prefetch => 'seq'
   };
   $options->{columns} = [qw/seq_id md5 trunc512 size circular/];
   # Case insensitive search by lowercase
+
+  return $self->search(
+    {
+      "seq.${checksum_algorithm}" => $id },
+    {
+      join => ['seq', 'source', 'synonyms' ],
+      prefetch => [qw/seq source/, {synonyms => 'source'}],
+    }
+  );
+
   return $self->find({
     $checksum_algorithm => lc($id)
   },

@@ -64,7 +64,13 @@ __PACKAGE__->add_columns(
 		size      => 4,
 		is_nullable => 1,
     is_numeric => 1,
-	},
+},
+  source_id =>{
+	  data_type => 'integer',
+	  size      => 16,
+	  is_nullable => 0,
+	  is_numeric => 1,
+  },
 );
 
 __PACKAGE__->add_unique_constraint(
@@ -77,5 +83,6 @@ __PACKAGE__->belongs_to(seq => 'Refget::Schema::Result::Seq', 'seq_id');
 __PACKAGE__->belongs_to(release => 'Refget::Schema::Result::Release', 'release_id');
 __PACKAGE__->belongs_to(mol_type => 'Refget::Schema::Result::MolType', 'mol_type_id');
 __PACKAGE__->has_many(synonyms => 'Refget::Schema::Result::Synonym', 'molecule_id');
+__PACKAGE__->belongs_to(source => 'Refget::Schema::Result::Source', 'source_id');
 
 1;

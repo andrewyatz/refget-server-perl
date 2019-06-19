@@ -1,6 +1,6 @@
 -- 
 -- Created by SQL::Translator::Producer::PostgreSQL
--- Created on Wed Apr 17 11:19:02 2019
+-- Created on Wed Jun 19 20:03:38 2019
 -- 
 --
 -- Table: division
@@ -51,6 +51,17 @@ CREATE INDEX md5_idx on seq (md5);
 CREATE INDEX trunc512_idx on seq (trunc512);
 
 --
+-- Table: source
+--
+DROP TABLE source CASCADE;
+CREATE TABLE source (
+  source_id bigserial NOT NULL,
+  source character varying(256) NOT NULL,
+  PRIMARY KEY (source_id),
+  CONSTRAINT source_uniq UNIQUE (source)
+);
+
+--
 -- Table: species
 --
 DROP TABLE species CASCADE;
@@ -89,12 +100,14 @@ CREATE TABLE molecule (
   first_seen integer NOT NULL,
   mol_type_id bigint NOT NULL,
   version smallint,
+  source_id bigint NOT NULL,
   PRIMARY KEY (molecule_id),
   CONSTRAINT molecule_uniq UNIQUE (id, mol_type_id)
 );
 CREATE INDEX molecule_idx_mol_type_id on molecule (mol_type_id);
 CREATE INDEX molecule_idx_release_id on molecule (release_id);
 CREATE INDEX molecule_idx_seq_id on molecule (seq_id);
+CREATE INDEX molecule_idx_source_id on molecule (source_id);
 
 --
 -- Table: synonym
@@ -103,11 +116,13 @@ DROP TABLE synonym CASCADE;
 CREATE TABLE synonym (
   synonym_id bigserial NOT NULL,
   molecule_id bigint NOT NULL,
+  source_id bigint NOT NULL,
   synonym character varying(256) NOT NULL,
   PRIMARY KEY (synonym_id),
   CONSTRAINT synonym_uniq UNIQUE (molecule_id, synonym)
 );
 CREATE INDEX synonym_idx_molecule_id on synonym (molecule_id);
+CREATE INDEX synonym_idx_source_id on synonym (source_id);
 
 --
 -- Foreign Key Definitions
@@ -128,6 +143,12 @@ ALTER TABLE molecule ADD CONSTRAINT molecule_fk_release_id FOREIGN KEY (release_
 ALTER TABLE molecule ADD CONSTRAINT molecule_fk_seq_id FOREIGN KEY (seq_id)
   REFERENCES seq (seq_id) ON DELETE CASCADE ON UPDATE CASCADE DEFERRABLE;
 
+ALTER TABLE molecule ADD CONSTRAINT molecule_fk_source_id FOREIGN KEY (source_id)
+  REFERENCES source (source_id) DEFERRABLE;
+
 ALTER TABLE synonym ADD CONSTRAINT synonym_fk_molecule_id FOREIGN KEY (molecule_id)
   REFERENCES molecule (molecule_id) ON DELETE CASCADE ON UPDATE CASCADE DEFERRABLE;
+
+ALTER TABLE synonym ADD CONSTRAINT synonym_fk_source_id FOREIGN KEY (source_id)
+  REFERENCES source (source_id) ON DELETE CASCADE ON UPDATE CASCADE DEFERRABLE;
 
