@@ -27,15 +27,27 @@ sub id {
 		return $self->render(text => 'Not Found', status => 404);
 	}
 
+  # Need to use unique indexing here because the same ID can be inserted because of different releases
+  my $alias_lookup = {};
+
 	my @aliases = ({ alias => $seq->vmcdigest(), naming_authority => 'vmc' },);
 	my $molecules = $seq->molecules();
 	foreach my $m (sort {$a->id() cmp $b->id() } $molecules->all()) {
-		next if !defined $m;
-		push(@aliases, { alias => $m->id, naming_authority => $m->source()->source() });
+    my $id = $m->id();
+    my $source = $m->source()->source();
+    if(! $alias_lookup->{$source}->{$id} ) {
+		  push(@aliases, { alias => $id, naming_authority => $source });
+      $alias_lookup->{$source}->{$id} = 1;
+    }
 		my $synonyms = $m->synonyms();
 		if($synonyms != 0) {
 			foreach my $s ($synonyms->next()) {
-				push(@aliases, { alias => $s->synonym(), naming_authority => $s->source()->source() });
+        my $synonym = $s->synonym();
+        my $authority = $s->source()->source();
+        if(! $alias_lookup->{$authority}->{$synonym}) {
+				  push(@aliases, { alias => $synonym, naming_authority => $authority });
+          $alias_lookup->{$authority}->{$synonym} = 1;
+        }
 			}
 		}
 	}
