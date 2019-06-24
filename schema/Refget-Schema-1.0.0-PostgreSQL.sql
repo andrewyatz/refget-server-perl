@@ -1,6 +1,6 @@
 -- 
 -- Created by SQL::Translator::Producer::PostgreSQL
--- Created on Wed Jun 19 20:03:38 2019
+-- Created on Fri Jun 21 09:41:15 2019
 -- 
 --
 -- Table: division
@@ -102,7 +102,7 @@ CREATE TABLE molecule (
   version smallint,
   source_id bigint NOT NULL,
   PRIMARY KEY (molecule_id),
-  CONSTRAINT molecule_uniq UNIQUE (id, mol_type_id)
+  CONSTRAINT molecule_uniq UNIQUE (id, mol_type_id, release_id, source_id)
 );
 CREATE INDEX molecule_idx_mol_type_id on molecule (mol_type_id);
 CREATE INDEX molecule_idx_release_id on molecule (release_id);

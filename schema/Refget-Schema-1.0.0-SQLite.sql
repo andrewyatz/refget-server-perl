@@ -1,7 +1,7 @@
--- 
+--
 -- Created by SQL::Translator::Producer::SQLite
--- Created on Wed Jun 19 20:03:38 2019
--- 
+-- Created on Fri Jun 21 09:41:15 2019
+--
 
 BEGIN TRANSACTION;
 
@@ -132,7 +132,7 @@ CREATE INDEX molecule_idx_seq_id ON molecule (seq_id);
 
 CREATE INDEX molecule_idx_source_id ON molecule (source_id);
 
-CREATE UNIQUE INDEX molecule_uniq ON molecule (id, mol_type_id);
+CREATE UNIQUE INDEX molecule_uniq ON molecule (id, mol_type_id, release_id, source_id);
 
 --
 -- Table: synonym

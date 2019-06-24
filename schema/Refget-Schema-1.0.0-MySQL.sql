@@ -1,6 +1,6 @@
 -- 
 -- Created by SQL::Translator::Producer::MySQL
--- Created on Wed Jun 19 20:03:38 2019
+-- Created on Fri Jun 21 09:41:15 2019
 -- 
 SET foreign_key_checks=0;
 
@@ -118,7 +118,7 @@ CREATE TABLE molecule (
   INDEX molecule_idx_seq_id (seq_id),
   INDEX molecule_idx_source_id (source_id),
   PRIMARY KEY (molecule_id),
-  UNIQUE molecule_uniq (id, mol_type_id),
+  UNIQUE molecule_uniq (id, mol_type_id, release_id, source_id),
   CONSTRAINT molecule_fk_mol_type_id FOREIGN KEY (mol_type_id) REFERENCES mol_type (mol_type_id) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT molecule_fk_release_id FOREIGN KEY (release_id) REFERENCES release (release_id) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT molecule_fk_seq_id FOREIGN KEY (seq_id) REFERENCES seq (seq_id) ON DELETE CASCADE ON UPDATE CASCADE,

@@ -23,58 +23,58 @@ use Class::Method::Modifiers;
 __PACKAGE__->table('molecule');
 
 __PACKAGE__->add_columns(
-	molecule_id =>{
-		data_type => 'integer',
-		size      => 16,
-		is_nullable => 0,
-		is_auto_increment => 1,
+  molecule_id =>{
+    data_type => 'integer',
+    size      => 16,
+    is_nullable => 0,
+    is_auto_increment => 1,
     is_numeric => 1,
-	},
-	seq_id =>{
-		data_type => 'integer',
-		size      => 16,
-		is_nullable => 1,
-		is_numeric => 1,
   },
-	release_id =>{
-		data_type => 'integer',
-		size      => 16,
-		is_nullable => 0,
-		is_numeric => 1,
+  seq_id =>{
+    data_type => 'integer',
+    size      => 16,
+    is_nullable => 1,
+    is_numeric => 1,
   },
-	id =>{
-		data_type => 'varchar',
+  release_id =>{
+    data_type => 'integer',
+    size      => 16,
+    is_nullable => 0,
+    is_numeric => 1,
+  },
+  id =>{
+    data_type => 'varchar',
     size => 128,
-		is_nullable => 0,
-	},
-	first_seen  =>{
-		data_type   => 'integer',
+    is_nullable => 0,
+  },
+  first_seen  =>{
+    data_type   => 'integer',
     is_boolean  => 1,
-		false_is    => ['0','-1'],
-		is_nullable => 0,
-	},
-	mol_type_id =>{
-		data_type => 'integer',
-		size      => 16,
-		is_nullable => 0,
-		is_numeric => 1,
-	},
-	version =>{
-		data_type => 'integer',
-		size      => 4,
-		is_nullable => 1,
+    false_is    => ['0','-1'],
+    is_nullable => 0,
+  },
+  mol_type_id =>{
+    data_type => 'integer',
+    size      => 16,
+    is_nullable => 0,
     is_numeric => 1,
-},
+  },
+  version =>{
+    data_type => 'integer',
+    size      => 4,
+    is_nullable => 1,
+    is_numeric => 1,
+  },
   source_id =>{
-	  data_type => 'integer',
-	  size      => 16,
-	  is_nullable => 0,
-	  is_numeric => 1,
+    data_type => 'integer',
+    size      => 16,
+    is_nullable => 0,
+    is_numeric => 1,
   },
 );
 
 __PACKAGE__->add_unique_constraint(
-  molecule_uniq => [qw/id mol_type_id/]
+  molecule_uniq => [qw/id mol_type_id release_id source_id/]
 );
 
 __PACKAGE__->set_primary_key('molecule_id');
