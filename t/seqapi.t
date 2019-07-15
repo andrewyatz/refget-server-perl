@@ -19,6 +19,7 @@ use warnings;
 use IO::Uncompress::Gunzip qw/gunzip $GunzipError/;
 use IO::Compress::Gzip 'gzip';
 use Mojo::JSON;
+use Refget::App;
 
 use Test::DBIx::Class {
   schema_class => 'Refget::Schema',
@@ -135,13 +136,23 @@ $t->get_ok('/ping', { Accept => 'plain/text'})
   ->content_is('Ping');
 
 $t->get_ok('/sequence/service-info', { Accept => 'application/json'})
-  ->status_is(200);
-  # ->json_is({service => {
-  #   supported_api_versions => ['1.0.0'],
-  #   circular_supported => Mojo::JSON::true(),
-  #   subsequence_limit => undef,
-  #   algorithms => ['md5', 'trunc512', 'vmcdigest']
-  # }});
+  ->status_is(200)
+  ->json_is({
+    contactUrl => 'mailto:ga4gh-refget@ga4gh.org',
+    description => 'Access to reference sequences using an identifier derived from the sequence itself',
+    documentationUrl => 'http://samtools.github.io/hts-specs/refget.html',
+    extension => {
+      circular_supported => Mojo::JSON::true(),
+      subsequence_limit => undef,
+      algorithms => ['md5', 'trunc512', 'vmcdigest']
+    },
+    id => 'org.ga4gh.refget',
+    name => 'Refget reference implementation',
+    organization => 'EMBL-EBI',
+    type => 'urn:ga4gh:refget',
+    version => $Refget::App::VERSION,
+  })
+  ->or(sub { diag explain $t->tx->res->json});
 
 # Start testing the major endpoints
 

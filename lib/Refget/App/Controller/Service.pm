@@ -17,6 +17,7 @@ package Refget::App::Controller::Service;
 use Mojo::Base 'Mojolicious::Controller';
 use Mojo::JSON qw/true/;
 use Refget::Util qw/available_algorithms/;
+use Refget::App;
 
 sub ping {
 	my ($self) = @_;
@@ -25,16 +26,18 @@ sub ping {
 
 sub service {
 	my ($self) = @_;
+  my $config = $self->config();
+  my $id = (exists $config->{server_id}) ? $config->{server_id} : 'org.ga4gh.refget';
   $self->respond_to(json => {
     json => {
-      id => 'refget',
-      name => 'refget reference implementation',
+      id => $id,
+      name => 'Refget reference implementation',
       type => 'urn:ga4gh:refget',
-      description => '',
-      documentationUrl => '',
+      description => 'Access to reference sequences using an identifier derived from the sequence itself',
+      documentationUrl => 'http://samtools.github.io/hts-specs/refget.html',
       organization => 'EMBL-EBI',
       contactUrl => 'mailto:ga4gh-refget@ga4gh.org',
-      version => '2.0.0',
+      version => $Refget::App::VERSION,
       extension => {
         circular_supported => true(),
         subsequence_limit => undef,
