@@ -25,13 +25,22 @@ sub ping {
 
 sub service {
 	my ($self) = @_;
-  $self->respond_to(
-    json => { json => {service => {
-      supported_api_versions => ['1.0.0'],
-      circular_supported => true(),
-      subsequence_limit => undef,
-      algorithms => [sort {$a cmp $b} available_algorithms()],
-    }}},
+  $self->respond_to(json => {
+    json => {
+      id => 'refget',
+      name => 'refget reference implementation',
+      type => 'urn:ga4gh:refget',
+      description => '',
+      documentationUrl => '',
+      organization => 'EMBL-EBI',
+      contactUrl => 'mailto:ga4gh-refget@ga4gh.org',
+      version => '2.0.0',
+      extension => {
+        circular_supported => true(),
+        subsequence_limit => undef,
+        algorithms => [sort {$a cmp $b} available_algorithms()],
+      }
+    }},
     any  => {data => 'Not Acceptable', status => 406}
   );
 }
