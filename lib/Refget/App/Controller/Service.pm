@@ -38,7 +38,7 @@ sub service {
       organization => 'EMBL-EBI',
       contactUrl => 'mailto:ga4gh-refget@ga4gh.org',
       version => $Refget::App::VERSION,
-      service_info => {
+      refget => {
         circular_supported => true(),
         subsequence_limit => undef,
         algorithms => [sort {$a cmp $b} available_algorithms()],
