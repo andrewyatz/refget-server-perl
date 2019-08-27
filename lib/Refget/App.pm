@@ -21,7 +21,7 @@ use Refget::Schema;
 use IO::Compress::Gzip 'gzip';
 use Refget::SeqStore::Builder;
 
-our $API_VERSION = '1.0.0';
+our $API_VERSION = '2.0.0';
 our $API_VND = 'vnd.ga4gh.refget.v'.$API_VERSION;
 
 # Connects once for entire application. For real apps, consider using a helper

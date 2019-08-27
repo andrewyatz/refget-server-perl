@@ -32,13 +32,13 @@ sub service {
     json => {
       id => $id,
       name => 'Refget reference implementation',
-      type => 'urn:ga4gh:refget',
-      description => 'Access to reference sequences using an identifier derived from the sequence itself',
+      type => 'urn:ga4gh:refget:2.0.0',
+      description => 'Access to reference sequences using an identifier derived from the sequence itself. A reference implementation providing access to example compliance sequences',
       documentationUrl => 'http://samtools.github.io/hts-specs/refget.html',
       organization => 'EMBL-EBI',
       contactUrl => 'mailto:ga4gh-refget@ga4gh.org',
       version => $Refget::App::VERSION,
-      extension => {
+      service_info => {
         circular_supported => true(),
         subsequence_limit => undef,
         algorithms => [sort {$a cmp $b} available_algorithms()],

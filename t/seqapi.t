@@ -128,7 +128,7 @@ $t->ua->on(start => sub {
   $tx->req->headers->remove('Accept-Encoding') if $disable_gzip_accept_encoding;
 });
 
-my $text_content_type = 'text/vnd.ga4gh.refget.v1.0.0+plain; charset=us-ascii';
+my $text_content_type = 'text/vnd.ga4gh.refget.v2.0.0+plain; charset=us-ascii';
 
 # Test service level endpoints
 $t->get_ok('/ping', { Accept => 'plain/text'})
@@ -139,9 +139,9 @@ $t->get_ok('/sequence/service-info', { Accept => 'application/json'})
   ->status_is(200)
   ->json_is({
     contactUrl => 'mailto:ga4gh-refget@ga4gh.org',
-    description => 'Access to reference sequences using an identifier derived from the sequence itself',
+    description => 'Access to reference sequences using an identifier derived from the sequence itself. A reference implementation providing access to example compliance sequences',
     documentationUrl => 'http://samtools.github.io/hts-specs/refget.html',
-    extension => {
+    service_info => {
       circular_supported => Mojo::JSON::true(),
       subsequence_limit => undef,
       algorithms => ['md5', 'trunc512', 'vmcdigest']
@@ -149,7 +149,7 @@ $t->get_ok('/sequence/service-info', { Accept => 'application/json'})
     id => 'org.ga4gh.refget',
     name => 'Refget reference implementation',
     organization => 'EMBL-EBI',
-    type => 'urn:ga4gh:refget',
+    type => 'urn:ga4gh:refget:2.0.0',
     version => $Refget::App::VERSION,
   })
   ->or(sub { diag explain $t->tx->res->json});
@@ -327,7 +327,7 @@ $t->post_ok('/batch/sequence'
       found => 0
     },
   ])
-  ->content_type_is('application/vnd.ga4gh.refget.v1.0.0+json');
+  ->content_type_is('application/vnd.ga4gh.refget.v2.0.0+json');
 
 my $metadata_sub = sub {
   my ($stable_id, $synonyms) = @_;
