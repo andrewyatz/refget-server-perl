@@ -186,10 +186,9 @@ sub gzip_encoding {
     return unless $c->stash->{gzip};
 
     # Check for TE first
-    my $chunk = 0;
+    my $te = 0;
     if(($c->req->headers->te // q{}) =~ /gzip/i) {
-      $c->res->headers->transfer_encoding('chunked, gzip');
-      $chunk = 1;
+      $te = 1;
     }
     # Then check for Accept-Encoding
     elsif(($c->req->headers->accept_encoding // q{}) =~ /gzip/i) {
@@ -203,16 +202,10 @@ sub gzip_encoding {
 
     #Compress
     gzip $output, \my $compressed;
-
-    # Write chunk or just set output
-    if($chunk) {
-      # Odd bug squished. With Content-Encoding didn't need this but Transfer-Encoding does need it
+    if($te) {
       $c->res->headers->append('Content-Length' => length($compressed));
-      # Second odd bug where we have to write a chunk and then finish it because we now use
-      # transfer encoding. I think it's something in Mojo that's doing this link but
-      # this solves it
-
-      $c->write_chunk($compressed => sub {
+      $c->res->headers->transfer_encoding('gzip');
+      $c->write($compressed, sub {
         $c->finish();
       });
     }
