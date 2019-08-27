@@ -148,7 +148,10 @@ $t->get_ok('/sequence/service-info', { Accept => 'application/json'})
     },
     id => 'org.ga4gh.refget',
     name => 'Refget reference implementation',
-    organization => 'EMBL-EBI',
+    organization => {
+      name => 'EMBL-EBI',
+      url => 'https://www.ebi.ac.uk'
+    },
     type => 'urn:ga4gh:refget:2.0.0',
     version => $Refget::App::VERSION,
   })
