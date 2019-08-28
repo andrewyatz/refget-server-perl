@@ -19,6 +19,7 @@ use warnings;
 use IO::Uncompress::Gunzip qw/gunzip $GunzipError/;
 use IO::Compress::Gzip 'gzip';
 use Mojo::JSON;
+use Mojo::Util qw/monkey_patch/;
 use Refget::App;
 
 use Test::DBIx::Class {
@@ -112,6 +113,14 @@ fixtures_ok sub {
   });
 
 },'Installed fixtures';
+
+# Have to monkey patch to avoid default mojo behaviour of beliving existence of the Transfer-Encoding
+# header means chunked. Maintained for all the tests
+monkey_patch 'Mojo::Content', is_chunked => sub {
+	my $te = shift->headers->transfer_encoding;
+	return 0 unless defined $te;
+	return 1 if $te =~ /chunked/;
+};
 
 # Set the application with the right schema. SQLite memory databases are a per driver thing
 $ENV{APP_ENABLE_COMPRESSION} = 1;
@@ -274,7 +283,7 @@ $disable_gzip_accept_encoding = 0;
 $t->head_ok($basic_url => { Accept => 'text/plain', 'TE' => 'gzip'})
   ->status_is(200, 'Accept-Encoding does not affect URL success')
   ->content_type_is($text_content_type, 'Content-Type remains text/plain with TE: gzip')
-  ->header_is('Transfer-Encoding', 'chunked, gzip', 'Transfer-Encoding is gzip')
+  ->header_is('Transfer-Encoding', 'gzip', 'Transfer-Encoding is gzip')
   ->header_is('Content-Length', '69', 'Content-Length of Accept-Encoding is set to 69');
 
 #Test Accept-Encoding
@@ -302,7 +311,7 @@ $t->get_ok($basic_url => { Accept => 'text/plain', 'TE' => 'gzip' })
   ->status_is(200);
 my $compressed_resp = $t->tx->res->body;
 gunzip \$compressed_resp => \my $uncompressed_output or fail( "Gunzip failed: $GunzipError");
-is($raw_seq, $uncompressed_output, 'Content was compressed; uncompressing and we get sequence back');
+is($uncompressed_output, $raw_seq, 'Content was compressed; uncompressing and we get sequence back');
 $disable_gzip_accept_encoding = 1;
 
 # Batch retrieval
