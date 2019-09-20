@@ -12,6 +12,6 @@ Refget enables access to reference sequences using an identifier derived from th
 <dt>Example metadata</dt>
 <dd><a href='/sequence/6681ac2f62509cfc220d78751b8dc524/metadata.json'><code>/sequence/6681ac2f62509cfc220d78751b8dc524/metadata</code></a></dd>
 <dt>Service information</dt>
-<dd><a href='/service-info.json'><code>/service-info</code></a></dd>
+<dd><a href='/sequence/service-info.json'><code>/sequence/service-info</code></a></dd>
 </dl>
 </p>

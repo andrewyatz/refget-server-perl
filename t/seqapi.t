@@ -144,7 +144,7 @@ $t->get_ok('/ping', { Accept => 'plain/text'})
   ->status_is(200)
   ->content_is('Ping');
 
-$t->get_ok('/service-info', { Accept => 'application/json'})
+$t->get_ok('/sequence/service-info', { Accept => 'application/json'})
   ->status_is(200)
   ->json_is({
     contactUrl => 'mailto:ga4gh-refget@ga4gh.org',

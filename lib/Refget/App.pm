@@ -87,7 +87,7 @@ sub startup {
 
   # Things that go to a controller
   $r->get('/ping')->to(controller => 'service', action => 'ping', default_encoding => 'txt' );
-  $r->get('/service-info')->to(controller => 'service', action => 'service', gzip => 1, default_encoding => 'json');
+  $r->get('/sequence/service-info')->to(controller => 'service', action => 'service', gzip => 1, default_encoding => 'json');
   $r->get('/sequence/:id')->to(controller => 'seq', action => 'id', gzip => 1, default_encoding => 'txt');
   $r->get('/sequence/:id/metadata')->to(controller => 'metadata', action => 'id', gzip => 1, default_encoding => 'json' );
   $r->post('/batch/sequence')->to(controller => 'batchseq', action => 'batch', gzip => 1, default_encoding => 'json');
