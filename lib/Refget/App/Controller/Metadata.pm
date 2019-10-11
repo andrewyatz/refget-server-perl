@@ -30,7 +30,7 @@ sub id {
   # Need to use unique indexing here because the same ID can be inserted because of different releases
   my $alias_lookup = {};
 
-	my @aliases = ({ alias => $seq->vmcdigest(), naming_authority => 'vmc' },);
+	my @aliases = ({ alias => $seq->ga4gh(), naming_authority => 'ga4gh' },);
 	my $molecules = $seq->molecules();
 	foreach my $m (sort {$a->id() cmp $b->id() } $molecules->all()) {
     my $id = $m->id();

@@ -19,7 +19,7 @@ use warnings;
 
 use base 'DBIx::Class::Core';
 use Class::Method::Modifiers;
-use Refget::Util qw/trunc512_to_vmc/;
+use Refget::Util qw/trunc512_to_ga4gh/;
 
 __PACKAGE__->table('seq');
 
@@ -86,10 +86,10 @@ sub default_checksum {
 	return $self->trunc512();
 }
 
-sub vmcdigest {
+sub ga4gh {
 	my ($self) = @_;
 	my $trunc512 = $self->trunc512();
-	return trunc512_to_vmc($trunc512);
+	return trunc512_to_ga4gh($trunc512);
 }
 
 1;

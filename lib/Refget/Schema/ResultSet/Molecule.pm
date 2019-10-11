@@ -18,17 +18,17 @@ use strict;
 use warnings;
 
 use base qw/DBIx::Class::ResultSet/;
-use Refget::Util qw/trunc512_digest vmc_to_trunc512 detect_algorithm allowed_algorithm/;
+use Refget::Util qw/trunc512_digest ga4gh_to_trunc512 detect_algorithm allowed_algorithm/;
 use Digest::MD5 qw/md5_hex/;
 
 # get a result set which represents all known molecules for the given sequence checksum identifier
 sub get_molecules {
   my ($self, $id, $checksum_algorithm) = @_;
   $checksum_algorithm //= detect_algorithm($id);
-  #Convert from VMC to trunc512 if required
-  if(defined $checksum_algorithm && $checksum_algorithm eq 'vmcdigest') {
+  #Convert from ga4gh to trunc512 if required
+  if(defined $checksum_algorithm && $checksum_algorithm eq 'ga4ghdigest') {
     $checksum_algorithm = 'trunc512';
-    $id = vmc_to_trunc512($id);
+    $id = ga4gh_to_trunc512($id);
   }
   return undef unless allowed_algorithm($checksum_algorithm);
   my $options = {

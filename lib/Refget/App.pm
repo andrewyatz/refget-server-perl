@@ -87,8 +87,8 @@ sub startup {
   # Things that go to a controller
   $r->get('/ping')->to(controller => 'service', action => 'ping', default_encoding => 'txt' );
   $r->get('/sequence/service-info')->to(controller => 'service', action => 'service', gzip => 1, default_encoding => 'json');
-  $r->get('/sequence/:id')->to(controller => 'seq', action => 'id', gzip => 1, default_encoding => 'txt');
-  $r->get('/sequence/:id/metadata')->to(controller => 'metadata', action => 'id', gzip => 1, default_encoding => 'json' );
+  $r->get('/sequence/#id')->to(controller => 'seq', action => 'id', gzip => 1, default_encoding => 'txt');
+  $r->get('/sequence/#id/metadata')->to(controller => 'metadata', action => 'id', gzip => 1, default_encoding => 'json' );
   $r->post('/batch/sequence')->to(controller => 'batchseq', action => 'batch', gzip => 1, default_encoding => 'json');
 
   # New content types
@@ -102,8 +102,24 @@ sub startup {
     return 1 if $accept && $accept ne '*/*';
     return 0;
   });
+
+  # Turn on using accept=content/type as an acceptable encoding because of issues in browsers
+  $self->detect_accept_param();
+
   # Default encoding support
   $self->default_encoding();
+}
+
+sub detect_accept_param {
+  my ($self) = @_;
+  $self->hook(around_dispatch => sub {
+    my ($next, $c) = @_;
+    my $possible_accept = $c->req->param('accept');
+    if($possible_accept) {
+      $c->req->headers->accept($possible_accept);
+    }
+    $next->();
+  });
 }
 
 sub default_encoding {

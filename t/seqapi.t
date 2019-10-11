@@ -46,13 +46,13 @@ fixtures_ok sub {
   my $seq = Seq->create({
     md5 => 'b6517aa110cc10776af5c368c5342f95',
     trunc512 => '0f1c17124a6adb8543a30e86bc2191cb1a16bc2931a56ba8',
-    # vmcdigest => 'VMC:GS_DxwXEkpq24VDow6GvCGRyxoWvCkxpWuo',
+    # ga4gh => 'ga4gh:SQ.DxwXEkpq24VDow6GvCGRyxoWvCkxpWuo',
     size => 61,
   });
   my $seq2 = Seq->create({
     md5 => 'c8e76de5f86131da26e8dd163658290d',
     trunc512 => '3ee63c430df30d169a3c79f81158abcf6629599c655dc6d8',
-    # vmcdigest => 'VMC:GS_PuY8Qw3zDRaaPHn4EVirz2YpWZxlXcbY',
+    # ga4gh => 'ga4gh:SQ.PuY8Qw3zDRaaPHn4EVirz2YpWZxlXcbY',
     size => 82,
   });
   my $seq3 = Seq->create({
@@ -150,7 +150,7 @@ $t->get_ok('/sequence/service-info', { Accept => 'application/json'})
     supported_api_versions => ['1.0.0'],
     circular_supported => Mojo::JSON::true(),
     subsequence_limit => undef,
-    algorithms => ['md5', 'trunc512', 'vmcdigest']
+    algorithms => ['ga4gh', 'md5', 'trunc512']
   }});
 
 # Start testing the major endpoints
@@ -175,11 +175,11 @@ foreach my $m (qw/md5 trunc512/) {
   $basic_check_sub->(uc($digest), "uppercase $m");
   $basic_check_sub->(lc($digest), "lowercase $m");
 }
-$basic_check_sub->($seq_obj->vmcdigest(), "vmcdigest");
+$basic_check_sub->($seq_obj->ga4gh(), "ga4gh");
 
-# Just force vmcdigest checks
-my $vmc_digest = 'VMC:GS_DxwXEkpq24VDow6GvCGRyxoWvCkxpWuo';
-$t->get_ok('/sequence/'.$vmc_digest => { Accept => 'text/plain'})
+# Just force ga4gh checks
+my $ga4gh_digest = 'ga4gh:SQ.DxwXEkpq24VDow6GvCGRyxoWvCkxpWuo';
+$t->get_ok('/sequence/'.$ga4gh_digest => { Accept => 'text/plain'})
     ->status_is(200)
     ->content_is($raw_seq);
 
@@ -333,7 +333,7 @@ my $metadata_sub = sub {
   $synonyms //= [];
   my $mol = Molecule->find({ id => $stable_id });
   my $aliases = [
-      { alias => $mol->seq->vmcdigest, naming_authority => 'vmc' },
+      { alias => $mol->seq->ga4gh, naming_authority => 'ga4gh' },
       { alias => $stable_id, naming_authority => 'unknown' },
     @{$synonyms}
   ];
@@ -376,7 +376,7 @@ $metadata_sub->('YHR055C');
       trunc512 => $trunc512_checksum,
       length => 0,
       aliases => [
-        { alias => 'VMC:GS_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA', naming_authority => 'vmc'},
+        { alias => 'ga4gh:SQ.AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA', naming_authority => 'ga4gh'},
         { alias => 'Shared', naming_authority => 'unknown' },
         { alias => 'Shared2', naming_authority => 'unknown' },
         { alias => 'synonym', naming_authority => 'Ensembl' },
@@ -396,7 +396,7 @@ $metadata_sub->('YHR055C');
     { seq_store => 'File', seq_store_args => { root_dir => './t/md5-hts-ref', checksum => 'md5' } }
   );
   $t_md5->app->schema(Schema);
-  foreach my $m (qw/md5 trunc512/) {
+  foreach my $m (qw/md5 trunc512 ga4gh/) {
     my $checksum = $seq_obj->$m(); #meta method call for digest
     $t_md5->get_ok('/sequence/'.$checksum => { Accept => 'text/plain'})
       ->status_is(200, 'Testing HTTP status code for '.$m)
