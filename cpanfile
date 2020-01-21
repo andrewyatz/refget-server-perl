@@ -13,7 +13,7 @@ requires 'Class::Load';
 requires 'Redis';
 
 # Mojo support
-requires 'Mojolicious', '<=8.17';
+requires 'Mojolicious', '==8.17';
 requires "EV";
 requires 'IO::Socket::Socks';
 requires 'IO::Socket::SSL';
