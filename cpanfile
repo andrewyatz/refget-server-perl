@@ -1,3 +1,7 @@
+# Mojo before all
+requires 'Mojolicious', '<=8.17';
+
+# Normal deps
 requires 'Moose';
 requires 'DBIx::Class::Schema';
 requires 'DBD::SQLite';
@@ -13,7 +17,6 @@ requires 'Class::Load';
 requires 'Redis';
 
 # Mojo support
-requires 'Mojolicious', '==8.17';
 requires "EV";
 requires 'IO::Socket::Socks';
 requires 'IO::Socket::SSL';
