@@ -1,4 +1,4 @@
-FROM alpine:3.9
+FROM alpine:3.11
 LABEL maintainer="ayates"
 
 COPY cpanfile /
@@ -7,8 +7,7 @@ ENV EV_EXTRA_DEFS -DEV_NO_ATFORK
 RUN apk update && \
   apk add perl perl-io-socket-ssl perl-dbd-pg perl-dev g++ make wget curl tar && \
   curl -L https://cpanmin.us | perl - App::cpanminus && \
-  cpanm --notest -M https://cpan.metacpan.org Mojolicious@8.17 && \
-  cpanm --installdeps --notest . -M https://cpan.metacpan.org && \
+  cpanm --installdeps --notest . && \
   apk del perl-dev g++ make wget curl && \
   rm -rf /root/.cpanm/* /usr/local/share/man/*
 
