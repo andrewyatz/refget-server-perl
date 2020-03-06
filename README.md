@@ -1,6 +1,6 @@
 # Refget Reference Implementation Server
 
-The refget reference implementation server is a Perl version of the refget protocol. The server uses a database to store metadata about a set of sequences and uses a local filesystem to store sequences in. The sequences are stored on disk as single line sequences with no whitespace and indexed under their checksum using the first 4 characters of the checksum to generate a directory hierarchy. This is the same mechanism used by htslib to create local sequence caches for CRAM files.
+The refget reference implementation server is a Perl version of the refget protocol. The server uses a database to store metadata about a set of sequences and either a database, file system or redis store to hold sequences. See later for details on available sequence storage layers.
 
 # Installing
 
@@ -151,6 +151,14 @@ Redis storage uses the Redis database to store and access data. The code uses Re
 ## Supporting additional layers
 
 Additional layers can be supported. They require using the `Refget::SeqStore::Base` Moose role. This requires you to implement two methods `_store(self, checksum, sequence)` and `_sub_seq(self, checksum, start, length)`. Once created the new storage layer can be added to the list of allowed layers in `Refget::SeqStore::Builder`.
+
+# Running tests
+
+The following command will run all tests in the `t` directory. Tests can be individually run as a perl script. All tests are run against our CI server on each commit.
+
+```bash
+prove -I lib/ t/
+```
 
 # Future Developments
 

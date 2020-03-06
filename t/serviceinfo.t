@@ -39,7 +39,8 @@ my $expected = {
     algorithms => [qw/ga4gh md5 trunc512/],
     subsequence_limit => undef,
     circular_supported => true(),
-  }
+  },
+  version => '2.0.0',
 };
 
 eq_or_diff($service_info->HASH(), $expected, 'Checking service info no customisation');
@@ -48,7 +49,8 @@ my $custom_si = Refget::ServiceInfo->build_from_config({
   organization => {
     name => 'Wibble', url => 'https://example.org'
   },
-  documentationUrl => 'https://docs.example.org'
+  documentationUrl => 'https://docs.example.org',
+  version => 'wib'
 });
 
 {
@@ -57,6 +59,7 @@ my $custom_si = Refget::ServiceInfo->build_from_config({
     name => 'Wibble', url => 'https://example.org'
   };
   $custom_expected->{documentationUrl} = 'https://docs.example.org';
+  $custom_expected->{version} = 'wib';
 
   eq_or_diff($custom_si->HASH(), $custom_expected, 'Checking service info no customisation');
 }

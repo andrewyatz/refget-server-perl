@@ -25,6 +25,7 @@ enum ServiceInfoEnvs => [qw/prod test dev staging/];
 has 'id' => ( isa => 'Str', is => 'ro', default => 'org.ga4gh.refget' );
 has 'name' => ( isa => 'Str', is => 'ro', default => 'Refget reference implementation' );
 has 'description' => ( isa => 'Str', is => 'ro', default => 'Reference implementation of the refget protocol' );
+has 'version' => ( isa => 'Str', is => 'ro', default => sub { $Refget::App::VERSION } );
 
 has 'contactUrl'=> ( isa => 'Maybe[Str]', is => 'ro', required => 0 );
 has 'documentationUrl' => ( isa => 'Maybe[Str]', is => 'ro', required => 0 );
@@ -49,6 +50,7 @@ sub HASH {
     environment => $self->environment(),
     id => $self->id(),
     name => $self->name(),
+    version => $self->version(),
   };
 
   $hash->{contactUrl} = $self->contactUrl() if defined $self->contactUrl();

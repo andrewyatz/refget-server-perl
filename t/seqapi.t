@@ -160,7 +160,8 @@ my $expected_service_info = {
     algorithms => [qw/ga4gh md5 trunc512/],
     subsequence_limit => undef,
     circular_supported => true(),
-  }
+  },
+  version => '2.0.0'
 };
 
 # Disable GZipping content unless boolean says otherwise. Mojo does this automatically during requests
