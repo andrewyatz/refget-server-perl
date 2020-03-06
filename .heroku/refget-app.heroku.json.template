@@ -3,5 +3,12 @@
   "seq_store_args": {
     "root_dir": "./compliance-data/hts-ref",
     "checksum": "trunc512"
+  },
+  "service_info": {
+    "organization": {
+      "name": "EMBL-EBI",
+      "url": "https://www.ebi.ac.uk"
+    },
+    "environment": "test"
   }
 }

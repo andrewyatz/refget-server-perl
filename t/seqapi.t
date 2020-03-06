@@ -18,7 +18,7 @@ use strict;
 use warnings;
 use IO::Uncompress::Gunzip qw/gunzip $GunzipError/;
 use IO::Compress::Gzip 'gzip';
-use Mojo::JSON;
+use Mojo::JSON qw/true/;
 use Mojo::Util qw/monkey_patch/;
 use Refget::App;
 
@@ -126,9 +126,42 @@ monkey_patch 'Mojo::Content', is_chunked => sub {
 $ENV{APP_ENABLE_COMPRESSION} = 1;
 my $t = Test::Mojo->new(
   'Refget::App',
-  { seq_store => 'File', seq_store_args => { root_dir => './t/hts-ref', checksum => 'trunc512' } }
+  {
+    seq_store => 'File', seq_store_args => { root_dir => './t/hts-ref', checksum => 'trunc512' },
+    service_info => {
+      documentationUrl => 'https://docs.example.org',
+      organization => {
+        url => 'https://www.example.org',
+        name => 'Test'
+      },
+      description => 'Desc',
+    }
+  }
 );
 $t->app->schema(Schema);
+
+# Setting up the expected service info payload
+my $expected_service_info = {
+	organization => {
+		url => 'https://www.example.org',
+		name => 'Test'
+	},
+  description => 'Desc',
+  documentationUrl => 'https://docs.example.org',
+  environment => 'dev',
+  id => 'org.ga4gh.refget',
+  name => 'Refget reference implementation',
+  type => {
+    artifact => 'refget',
+    group => 'ga4gh',
+    version => '2.0.0'
+  },
+  refget => {
+    algorithms => [qw/ga4gh md5 trunc512/],
+    subsequence_limit => undef,
+    circular_supported => true(),
+  }
+};
 
 # Disable GZipping content unless boolean says otherwise. Mojo does this automatically during requests
 my $disable_gzip_accept_encoding = 1;
@@ -137,7 +170,7 @@ $t->ua->on(start => sub {
   $tx->req->headers->remove('Accept-Encoding') if $disable_gzip_accept_encoding;
 });
 
-my $text_content_type = 'text/vnd.ga4gh.refget.v1.0.0+plain; charset=us-ascii';
+my $text_content_type = 'text/vnd.ga4gh.refget.v2.0.0+plain; charset=us-ascii';
 
 # Test service level endpoints
 $t->get_ok('/ping', { Accept => 'plain/text'})
@@ -146,12 +179,7 @@ $t->get_ok('/ping', { Accept => 'plain/text'})
 
 $t->get_ok('/sequence/service-info', { Accept => 'application/json'})
   ->status_is(200)
-  ->json_is({service => {
-    supported_api_versions => ['1.0.0'],
-    circular_supported => Mojo::JSON::true(),
-    subsequence_limit => undef,
-    algorithms => ['ga4gh', 'md5', 'trunc512']
-  }});
+  ->json_is($expected_service_info);
 
 # Start testing the major endpoints
 
@@ -326,7 +354,7 @@ $t->post_ok('/batch/sequence'
       found => 0
     },
   ])
-  ->content_type_is('application/vnd.ga4gh.refget.v1.0.0+json');
+  ->content_type_is('application/vnd.ga4gh.refget.v2.0.0+json');
 
 my $metadata_sub = sub {
   my ($stable_id, $synonyms) = @_;

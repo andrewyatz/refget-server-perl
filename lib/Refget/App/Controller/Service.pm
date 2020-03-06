@@ -15,23 +15,18 @@
 package Refget::App::Controller::Service;
 
 use Mojo::Base 'Mojolicious::Controller';
-use Mojo::JSON qw/true/;
-use Refget::Util qw/available_algorithms/;
+use Refget::ServiceInfo;
 
 sub ping {
-	my ($self) = @_;
-	$self->render(text => "Ping");
+  my ($self) = @_;
+  $self->render(text => "Ping");
 }
 
 sub service {
-	my ($self) = @_;
+  my ($self) = @_;
+  my $service_info = Refget::ServiceInfo->build_from_config($self->config()->{service_info});
   $self->respond_to(
-    json => { json => {service => {
-      supported_api_versions => ['1.0.0'],
-      circular_supported => true(),
-      subsequence_limit => undef,
-      algorithms => [sort {$a cmp $b} available_algorithms()],
-    }}},
+    json => { json => $service_info->HASH() },
     any  => {data => 'Not Acceptable', status => 406}
   );
 }
