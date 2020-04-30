@@ -27,7 +27,7 @@ __PACKAGE__->load_namespaces();
 
 sub generate_db_args {
   my ($class) = @_;
-  my @dbargs;
+  my %args;
 
   # First check for DATABASE_URL from Heroku
   if(exists $ENV{DATABASE_URL}) {
@@ -40,34 +40,37 @@ sub generate_db_args {
     # Parse URL
 		my $db = $url->path();
 		$db =~ s/^\///;
-    my $dbi_string;
+    my $dsn;
     if('postgres' eq $url->protocol()) {
-      $dbi_string = sprintf('dbi:Pg:dbname=%s;host=%s;port=%s', $db, $url->host(), $url->port());
+      $dsn = sprintf('dbi:Pg:dbname=%s;host=%s;port=%s', $db, $url->host(), $url->port());
     }
     elsif('sqlite' eq $url->protocol()) {
-      $dbi_string = 'dbi:SQLite:'.$db;
+      $dsn = 'dbi:SQLite:'.$db;
     }
     else {
       die "Unsupported URL scheme ".$url->protocol();
     }
 
-    push(@dbargs, $dbi_string);
-		push(@dbargs, $user) if $user;
-    push(@dbargs, $pass) if $pass;
+    $args{dsn} = $dsn;
+		$args{user} = $user if $user;
+    $args{password} = $pass if $pass;
+
+    my $url_params = $url->query()->to_hash();
+    %args = (%args, %{$url_params}); # Populate the hash with params as required
   }
   # Check for DBI if we have been given a full string
   elsif(exists $ENV{DBI}) {
-    push(@dbargs, $ENV{DBI});
+    $args{dsn} = $ENV{DBI};
   }
   # Finally if DEV is set create the local SQLite DB called test.db
   elsif(exists $ENV{DEV}) {
-    push(@dbargs, 'dbi:SQLite:test.db');
+    $args{dsn} = 'dbi:SQLite:test.db';
   }
   else {
     die "Please set the URI via one of the mechanisms"
   }
 
-  return @dbargs;
+  return \%args;
 }
 
 1;
