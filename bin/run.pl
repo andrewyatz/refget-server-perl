@@ -33,7 +33,7 @@ my $config_file = path($config);
 my $json = decode_json($config_file->slurp());
 
 my $fasta = Refget::Fmt::Fasta->new(file => $file, type => $mol_type);
-my $seq_store = Refget::SeqStore::Builder->build_from_config($json);
+my $seq_store = Refget::SeqStore::Builder->build_from_config($schema, $json);
 my $import = Refget::Exe::Import->new(
   schema => $schema,
   seq_store => $seq_store,

@@ -18,7 +18,7 @@ cpanm --installdeps .
 ```
 # Database URLs
 
-The system supports setting a database URL held in the variable `DATABASE_URL`. These are formatted as `database://username:password@server:port/database`. SQLite is supported by specifying just a database name e.g. `sqlite:///database_path.db`.
+The system supports setting a database URL held in the variable `DATABASE_URL`. These are formatted as `database://username:password@server:port/database`. SQLite is supported by specifying just a database name e.g. `sqlite:////database_path.db`. (note the 4 slashes)
 
 You can also provide additional arguments through the DBIx::Class (the underlying engine) using URL parameters. These will all be passed onto the underlying engine verbatim. This can be used to give additional data to a connection.
 

@@ -158,10 +158,10 @@ reset_schema;
 
 # Test the builder code
 {
-	throws_ok { Refget::SeqStore::Builder->build_from_config({}) } qr/seq_store/, 'No seq_store caught';
-	throws_ok { Refget::SeqStore::Builder->build_from_config({seq_store => 'File'}) } qr/seq_store_args/, 'No seq_store_args caught';
-	throws_ok { Refget::SeqStore::Builder->build_from_config({seq_store => 'File', seq_store_args => q{}}) } qr/not a hash/, 'Bad seq_store_args caught';
-	my $file_seq_store = Refget::SeqStore::Builder->build_from_config({
+	throws_ok { Refget::SeqStore::Builder->build_from_config(Schema, {}) } qr/seq_store/, 'No seq_store caught';
+	throws_ok { Refget::SeqStore::Builder->build_from_config(Schema, {seq_store => 'File'}) } qr/seq_store_args/, 'No seq_store_args caught';
+	throws_ok { Refget::SeqStore::Builder->build_from_config(Schema, {seq_store => 'File', seq_store_args => q{}}) } qr/not a hash/, 'Bad seq_store_args caught';
+	my $file_seq_store = Refget::SeqStore::Builder->build_from_config(Schema, {
 		seq_store => 'File',
 		seq_store_args => {root_dir => $root_dir, checksum => 'trunc512'}
 	});

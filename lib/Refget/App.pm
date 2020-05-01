@@ -68,7 +68,7 @@ sub startup {
   $self->helper(seq_fetcher => sub {
     my ($self) = @_;
     my $config = $self->config();
-    return Refget::SeqStore::Builder->build_from_config($config);
+    return Refget::SeqStore::Builder->build_from_config($self->db(), $config);
   });
 
   # Route commands through the application
