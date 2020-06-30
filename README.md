@@ -9,18 +9,33 @@ The refget reference implementation server is a Perl version of the refget proto
 - GCC
 - Perl 5.14+
 - cpanminus
-- Postgres development headers
+- Postgres, MySQL development headers / libraries
 
-## Installing Perl Dependencies
+Normally all of these pre-requisits can be installed using your package management system such as `apt`. Install these requiremnets on Alpine Linux you can run the following:
+
+```
+apk update
+apk add perl perl-io-socket-ssl perl-dbd-pg perl-dbd-mysql perl-dev g++ make wget curl tar 
+curl -L https://cpanmin.us | perl - App::cpanminus
+```
+
+This will install Perl, SSL, Postgres and MySQL DBD drivers, Perl headers and the GCC build toolkit.
+
+## Installing Perl dependencies
+
+You can use cpanminus to install all Perl requirements.
 
 ```bash
 cpanm --installdeps .
 ```
+
 # Database URLs
+
+**This section assumes you have already have a database available to communicate with. If not see [creating & populating the database](#creating-and-populating-the-database).**
 
 The system supports setting a database URL held in the variable `DATABASE_URL`. These are formatted as `database://username:password@server:port/database`. SQLite is supported by specifying just a database name e.g. `sqlite:////database_path.db`. (note the 4 slashes)
 
-You can also provide additional arguments through the DBIx::Class (the underlying engine) using URL parameters. These will all be passed onto the underlying engine verbatim. This can be used to give additional data to a connection.
+You can also provide additional arguments through the DBIx::Class (the underlying engine) using URL parameters. These will all be passed onto the underlying engine verbatim and can be used to give additional data to a connection e.g. supporting PostgeSQL schemas.
 
 ## Supporting PostgreSQL schemas
 
@@ -29,10 +44,6 @@ Using URL parameters you can tell the server to use an alternative schema within
 ```bash
 export DATABASE_URL="postgres://user:pass@server:5432/db?on_connect_do=SET search_path TO myschema,otherschema,public"
 ```
-
-## Creating a schema
-
-The server can run off a variety of database types as it uses DBIx::Class. However we have tested the server with SQLite and Postgres. The latest database schemas are located in the `schema` directory. Pipe the SQL into your target database type and then give the server the database location.
 
 # Running
 
@@ -67,20 +78,37 @@ export MOJO_CONFIG="refget-app.json"
 
 Since this is a Mojolicous application you can use any of the supported servers such as [hypnotoad](https://metacpan.org/pod/Mojo::Server::Hypnotoad), [morbo](https://metacpan.org/pod/Mojo::Server::Morbo) or any PSGI compatible server. See [mojolicous's deployment guide](https://metacpan.org/pod/distribution/Mojolicious/lib/Mojolicious/Guides/Cookbook.pod#DEPLOYMENT) for more information on options.
 
-# Populating the database
+# Creating and populating the database
+
+## Creating the database
+
+The server can run off a variety of database types as it uses DBIx::Class as an ORM layer. However we have tested the server with SQLite, MySQL and Postgres. The latest database schemas are located in the `schema` directory. Pipe the SQL into your target database type and then give the server the database location. Examples about how to do this are given below.
+
+### SQLite
+
+```bash
+sqlite3 my-refget.db < schema/Refget-Schema-1.0.0-SQLite.sql
+```
+
+### MySQL
+
+```bash
+mysql --user=username --password=password --port=3306 -e "create database refget"
+mysql --user=username --password=password --port=3306 < schema/Refget-Schema-1.0.0-MySQL.sql
+```
 
 ## Populating the dictionaries
 
-Run the following command.
+The schema needs all of its enumerated dictionaries populated with default values. Run the following command to do this.
 
 ```bash
 export DATABASE_URL=postgres://username:password@server:port/databasename
 perl -I lib ./bin/populate-db-dicts.pl
 ```
 
-This will populate all enumerated dictionaries of values with the default values.
+If you want to use different values, then you can manually insert these into those tables i.e. `division`, `mol_type` and `source`. All other enumerated tables are populated as/when required.
 
-## Populating it with with sequence metadata and the filesystem with sequences
+# Populating it with with sequence metadata and the filesystem with sequences
 
 To load sequences into a database you can use the `bin/run.pl` script. The arguments are positional and are
 
