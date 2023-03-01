@@ -31,7 +31,7 @@ around 'iterate' => sub {
   $self->$orig(sub {
     my ($line) = @_;
     # Look for header lines
-    if($line =~ /^>([a-z0-9_.-]+)\s?(?:(.+))?/i) {
+    if($line =~ /^>([a-z0-9()_.-]+)\s?(?:(.+))?/i) {
       my $local_id = $1;
       my $local_additional = $2 || q{};
       if(! defined $id && $past_first_line) {
