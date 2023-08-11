@@ -94,7 +94,7 @@ sqlite3 my-refget.db < schema/Refget-Schema-1.0.0-SQLite.sql
 
 ```bash
 mysql --user=username --password=password --port=3306 -e "create database refget"
-mysql --user=username --password=password --port=3306 < schema/Refget-Schema-1.0.0-MySQL.sql
+mysql --user=username --password=password --port=3306 refget < schema/Refget-Schema-1.0.0-MySQL.sql
 ```
 
 ## Populating the dictionaries

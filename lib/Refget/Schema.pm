@@ -47,6 +47,9 @@ sub generate_db_args {
     elsif('sqlite' eq $url->protocol()) {
       $dsn = 'dbi:SQLite:'.$db;
     }
+    elsif('mysql' eq $url->protocol()) {
+      $dsn = sprintf('dbi:mysql:database=%s;host=%s;port=%s', $db, $url->host(), $url->port());
+    }
     else {
       die "Unsupported URL scheme ".$url->protocol();
     }
