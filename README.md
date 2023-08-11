@@ -2,9 +2,9 @@
 
 The refget reference implementation server is a Perl version of the refget protocol. The server uses a database to store metadata about a set of sequences and uses a local filesystem to store sequences in. The sequences are stored on disk as single line sequences with no whitespace and indexed under their checksum using the first 4 characters of the checksum to generate a directory hierarchy. This is the same mechanism used by htslib to create local sequence caches for CRAM files.
 
-# Installing
+## Installing
 
-## Pre-requisites
+### Pre-requisites
 
 - GCC
 - Perl 5.14+
@@ -13,7 +13,7 @@ The refget reference implementation server is a Perl version of the refget proto
 
 Normally all of these pre-requisits can be installed using your package management system such as `apt`. Install these requiremnets on Alpine Linux you can run the following:
 
-```
+```bash
 apk update
 apk add perl perl-io-socket-ssl perl-dbd-pg perl-dbd-mysql perl-dev g++ make wget curl tar 
 curl -L https://cpanmin.us | perl - App::cpanminus
@@ -21,7 +21,7 @@ curl -L https://cpanmin.us | perl - App::cpanminus
 
 This will install Perl, SSL, Postgres and MySQL DBD drivers, Perl headers and the GCC build toolkit.
 
-## Installing Perl dependencies
+### Installing Perl dependencies
 
 You can use cpanminus to install all Perl requirements.
 
@@ -29,7 +29,7 @@ You can use cpanminus to install all Perl requirements.
 cpanm --installdeps .
 ```
 
-# Database URLs
+## Database URLs
 
 **This section assumes you have already have a database available to communicate with. If not see [creating & populating the database](#creating-and-populating-the-database).**
 
@@ -37,7 +37,7 @@ The system supports setting a database URL held in the variable `DATABASE_URL`. 
 
 You can also provide additional arguments through the DBIx::Class (the underlying engine) using URL parameters. These will all be passed onto the underlying engine verbatim and can be used to give additional data to a connection e.g. supporting PostgeSQL schemas.
 
-## Supporting PostgreSQL schemas
+### Supporting PostgreSQL schemas
 
 Using URL parameters you can tell the server to use an alternative schema within your PostgreSQL database. This is done using the `on_connect_do` key like so
 
@@ -45,15 +45,15 @@ Using URL parameters you can tell the server to use an alternative schema within
 export DATABASE_URL="postgres://user:pass@server:5432/db?on_connect_do=SET search_path TO myschema,otherschema,public"
 ```
 
-# Running
+## Running
 
-## Configuration
+### Configuration
 
-### Config file
+#### Config file
 
 By default the application expects to find a file called `refget-app.json` in the root directory. You can alter this by specifying `MOJO_CONFIG=path/to/json`. Consult the file `refget-app.json.example` for available configuration variables. This file is used to configure the sequence storage layer.
 
-### Environment variables
+#### Environment variables
 
 Note these config variables pre-date the use of a configuration file. In time many of these options will migrate into the config file.
 
@@ -66,7 +66,7 @@ Note these config variables pre-date the use of a configuration file. In time ma
 - `APP_ACCESS_LOG_FORMAT`: Format of access log to write. Options are `common`, `combined`, `combinedio` or you can specify your own Apache LogFormat string
 - `APP_ENABLE_COMPRESSION`: Enable on-the-wire gzip compression on responses
 
-## Running the server
+### Running the server
 
 The following will start an instance of [Mojo::Server::Daemon](https://metacpan.org/pod/Mojo::Server::Daemon) in production mode listening on port 8080 with the database location specified as a URL.
 
@@ -78,26 +78,26 @@ export MOJO_CONFIG="refget-app.json"
 
 Since this is a Mojolicous application you can use any of the supported servers such as [hypnotoad](https://metacpan.org/pod/Mojo::Server::Hypnotoad), [morbo](https://metacpan.org/pod/Mojo::Server::Morbo) or any PSGI compatible server. See [mojolicous's deployment guide](https://metacpan.org/pod/distribution/Mojolicious/lib/Mojolicious/Guides/Cookbook.pod#DEPLOYMENT) for more information on options.
 
-# Creating and populating the database
+## Creating and populating the database
 
-## Creating the database
+### Creating the database
 
 The server can run off a variety of database types as it uses DBIx::Class as an ORM layer. However we have tested the server with SQLite, MySQL and Postgres. The latest database schemas are located in the `schema` directory. Pipe the SQL into your target database type and then give the server the database location. Examples about how to do this are given below.
 
-### SQLite
+#### SQLite
 
 ```bash
 sqlite3 my-refget.db < schema/Refget-Schema-1.0.0-SQLite.sql
 ```
 
-### MySQL
+#### MySQL
 
 ```bash
 mysql --user=username --password=password --port=3306 -e "create database refget"
 mysql --user=username --password=password --port=3306 refget < schema/Refget-Schema-1.0.0-MySQL.sql
 ```
 
-## Populating the dictionaries
+### Populating the dictionaries
 
 The schema needs all of its enumerated dictionaries populated with default values. Run the following command to do this.
 
@@ -108,7 +108,7 @@ perl -I lib ./bin/populate-db-dicts.pl
 
 If you want to use different values, then you can manually insert these into those tables i.e. `division`, `mol_type` and `source`. All other enumerated tables are populated as/when required.
 
-# Populating it with with sequence metadata and the filesystem with sequences
+## Populating it with with sequence metadata and the filesystem with sequences
 
 To load sequences into a database you can use the `bin/run.pl` script. The arguments are positional and are
 
@@ -129,7 +129,7 @@ perl -I lib ./bin/run.pl fasta.file 96 dna homo_sapiens none grch37 Ensembl 1000
 
 The script will iterate through the file, loads sequences if it were not already in the database and links additional metadata to the record. Please note this script was originally envisaged to load data from Ensembl resources hence a number of Ensembl conventions are present. These should not affect your usage of the loader code.
 
-# Generating Schemas
+## Generating Schemas
 
 ```bash
 perl -I lib ./bin/schema.pl
@@ -137,15 +137,15 @@ perl -I lib ./bin/schema.pl
 
 When executed from the root directory, this will create a set of schemas located in the `schema` directory. Version of schemas are controlled by the `$Refget::Schema::VERSION` variable located in `lib/Refget/Schema.pm`.
 
-# Sequence Storage Layers
+## Sequence Storage Layers
 
 Three types of sequences storage layers exist; File, DBIx and Redis. All storage layers require you to specify the checksum to use for indexing. A sequence storage layer can work with only one checksum and requires the metadata systems to normalise into this single key. Whilst DBIx is the simplest to configure both the file and Redis layers have some advantages such as scalability to numbers of sequences or speed of access. Ultimately it is up to the implementation to understand what is important and to use the appropriate storage layer.
 
-## File Storage
+### File Storage
 
 File storage creates a htslib like `hts-ref` storage system, where a directory hierarchy is created. The first two levels are the first and second hex number from the generated HASH e.g. the sequence for `959cb1883fc1ca9ae1394ceb475a356ead1ecceff5824ae7` is held under `95/9c/959cb1883fc1ca9ae1394ceb475a356ead1ecceff5824ae7`.
 
-### Configuration
+#### File storage configuration
 
 ```json
 {
@@ -157,11 +157,11 @@ File storage creates a htslib like `hts-ref` storage system, where a directory h
 }
 ```
 
-## DBIx
+### DBIx
 
 DBIx storage uses the same database as where all loaded sequence metadata goes and pushes data into a table called `raw_seq`, which is indexed by the chosen checksum identifier. This is the simplest storage system to use as it keeps metadata and sequence together.
 
-### Configuration
+#### DBIx configuration
 
 ```json
 {
@@ -172,11 +172,11 @@ DBIx storage uses the same database as where all loaded sequence metadata goes a
 }
 ```
 
-## Redis
+### Redis
 
 Redis storage uses the Redis database to store and access data. The code uses Redis' `GETRANGE` function to retrieve sub-sequences. You configure the instance by passing through parameters meant for the [Perl Redis module](https://metacpan.org/pod/Redis).
 
-### Configuration
+#### Redis configuration
 
 ```json
 {
@@ -186,12 +186,12 @@ Redis storage uses the Redis database to store and access data. The code uses Re
   }
 }
 ```
-## Supporting additional layers
+
+### Supporting additional layers
 
 Additional layers can be supported. They require using the `Refget::SeqStore::Base` Moose role. This requires you to implement two methods `_store(self, checksum, sequence)` and `_sub_seq(self, checksum, start, length)`. Once created the new storage layer can be added to the list of allowed layers in `Refget::SeqStore::Builder`.
 
-# Future Developments
+## Future Developments
 
 - Better loading code
 - More scripts for loading sequence aliases
-
