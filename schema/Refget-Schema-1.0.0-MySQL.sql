@@ -1,6 +1,6 @@
 --
 -- Created by SQL::Translator::Producer::MySQL
--- Created on Fri Aug 11 11:56:25 2023
+-- Created on Fri Aug 11 16:07:23 2023
 --
 SET foreign_key_checks=0;
 
@@ -35,7 +35,7 @@ DROP TABLE IF EXISTS `raw_seq`;
 --
 CREATE TABLE `raw_seq` (
   `checksum` char(48) NOT NULL,
-  `seq` text NOT NULL,
+  `seq` longtext NOT NULL,
   PRIMARY KEY (`checksum`)
 );
 

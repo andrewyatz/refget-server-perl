@@ -28,7 +28,7 @@ __PACKAGE__->add_columns(
 		is_nullable => 0,
 	},
 	seq =>{
-		data_type => 'text',
+		data_type => 'longtext',
 		is_nullable => 0,
 	}
 );
