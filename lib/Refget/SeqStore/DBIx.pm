@@ -24,8 +24,18 @@ has 'schema' => (isa => 'Refget::Schema', is => 'ro', required => 1);
 sub _store {
   my ($self, $checksum, $sequence) = @_;
   my $rs = $self->schema->resultset('RawSeq');
-  my $raw_seq = $rs->find_or_create({ checksum => $checksum, seq => $sequence });
-  return $raw_seq;
+  my $row = $rs->search(
+    { checksum => $checksum },
+    {
+      columns => [qw/ checksum /],
+    }
+  )->single();
+  if($row) {
+    return $row;
+  }
+  my $hash = { checksum => $checksum, seq => $sequence };
+  my $raw_seq = $rs->new_result($hash);
+  return $raw_seq->insert();
 }
 
 sub _sub_seq {
