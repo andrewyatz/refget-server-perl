@@ -31,6 +31,7 @@ use Refget::SeqStore::File;
 use Refget::SeqStore::DBIx;
 use Refget::SeqStore::Redis;
 use Refget::SeqStore::Builder;
+use Refget::SeqStore::ChunkedRawSeq;
 
 use Test::DBIx::Class {
   schema_class => 'Refget::Schema',
@@ -150,6 +151,26 @@ reset_schema;
 		my $raw_seq = $redis->get($hash->{trunc512});
 		ok(defined $raw_seq, "Found an entry for ".$hash->{trunc512});
 		like($raw_seq, $hash->{content}, "${seq_name} content is as expected ".$hash->{content});
+	}
+
+	# Test subseq retrieval
+	$test_subseq->($seq_store);
+}
+
+reset_schema;
+
+# Testing the chunking schema
+{
+	note 'Testing chunked database storage';
+	my $seq_store = Refget::SeqStore::ChunkDBIx->new(schema => Schema, chunk_size => 4);
+	$run_import->($seq_store);
+	my $seqs_count = RawSeq->count({});
+	is($seqs_count, 3, 'Checking we have three raw_seq rows inserted');
+	foreach my $seq_name (sort keys %{$lookup}) {
+		my $hash = $lookup->{$seq_name};
+		my $raw_seq = RawSeq->find($hash->{trunc512});
+		ok(defined $raw_seq, "Found a row for ".$hash->{trunc512});
+		like($raw_seq->seq(), $hash->{content}, "${seq_name} content is as expected ".$hash->{content});
 	}
 
 	# Test subseq retrieval
